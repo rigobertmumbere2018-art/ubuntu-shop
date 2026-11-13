@@ -79,29 +79,19 @@ app.get('/', (c) => c.html(`<!doctype html>
       document.querySelectorAll('[data-placeholder-' + lang + ']').forEach(el => { el.placeholder = el.getAttribute('data-placeholder-' + lang); });
     });
     document.getElementById('year').textContent = new Date().getFullYear();
-    const demoProducts = [
-      { image:'/assets/products/porte-nom-esther.jpg', category:'Décoration personnalisée', title:'Porte-nom décoratif « Esther »', description:'Création décorative personnalisée avec prénom, motifs floraux et support de présentation.', price:'Prix sur demande' },
-      { image:'/assets/products/coffret-saint-valentin.jpg', category:'Cadeaux personnalisés', title:'Ensemble cadeau Saint-Valentin', description:'Ensemble de créations personnalisées en bois : plaque gravée, cœur porte-clés et décoration florale.', price:'Prix sur demande' }
-    ];
-    function renderProducts(products) {
-      const grid = document.getElementById('product-grid');
-      grid.replaceChildren();
-      products.forEach(product => {
-        const card = document.createElement('article'); card.className = 'product-card';
-        const visual = document.createElement('div'); visual.className = 'product-image';
-        const img = document.createElement('img'); img.src = product.image_url || product.image; img.alt = product.title || product.reference || 'Réalisation UBUNTU';
-        visual.append(img);
-        const info = document.createElement('div'); info.className = 'product-info';
-        const category = document.createElement('p'); category.className = 'product-category'; category.textContent = product.support_fr || product.category || product.category_id || '';
-        const title = document.createElement('h3'); title.textContent = product.title || product.reference || 'Article';
-        const description = document.createElement('p'); description.textContent = product.description_fr || product.description || '';
-        const price = document.createElement('strong'); price.textContent = product.price_min_usd != null ? Number(product.price_min_usd).toLocaleString('en-US', {style:'currency',currency:'USD'}) : 'Prix sur demande';
-        info.append(category, title, description, price); card.append(visual, info); grid.append(card);
-      });
-    }
-    fetch('/api/products').then(r => r.ok ? r.json() : []).then(products => {
-      renderProducts(Array.isArray(products) && products.length ? products : demoProducts);
-    }).catch(() => renderProducts(demoProducts));
+    const productGrid = document.getElementById('product-grid');
+    productGrid.innerHTML = Array.from({length: 9}, (_, index) => `
+      <article class="product-card product-placeholder" aria-label="Emplacement produit à compléter">
+        <div class="product-image placeholder-image" aria-hidden="true"></div>
+        <div class="product-info">
+          <span class="placeholder-line placeholder-short"></span>
+          <span class="placeholder-line placeholder-title"></span>
+          <span class="placeholder-line placeholder-description"></span>
+          <span class="placeholder-line placeholder-price"></span>
+        </div>
+      </article>`).join('');
+    document.getElementById('product-search').disabled = true;
+    document.getElementById('product-search').placeholder = 'Catalogue en préparation…';
   </script>
 </body></html>`));
 

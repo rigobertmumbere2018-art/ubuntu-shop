@@ -113,3 +113,14 @@ img{max-width:100%;display:block}
  .footer-inner{flex-direction:column;font-size:8px}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important;animation:none!important}}
+
+/* Emplacements temporaires du catalogue : neuf cartes vides, sans produits fictifs. */
+.product-placeholder{min-height:330px;overflow:hidden;transform:none!important}
+.product-placeholder:hover{border-color:rgba(255,255,255,.14)}
+.placeholder-image{height:220px;background:#061238;border-bottom:1px solid rgba(255,255,255,.08)}
+.placeholder-line{display:block;height:9px;border-radius:2px;background:rgba(255,255,255,.08);margin:0 0 13px}
+.placeholder-short{width:28%;background:rgba(240,233,18,.12)}
+.placeholder-title{width:72%;height:13px}
+.placeholder-description{width:90%;margin-top:18px}
+.placeholder-price{width:35%;height:12px;margin-top:20px;background:rgba(240,233,18,.10)}
+@media(max-width:560px){.product-placeholder{min-height:300px}.placeholder-image{height:190px}}
