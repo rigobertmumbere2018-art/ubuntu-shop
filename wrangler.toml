@@ -1,0 +1,16 @@
+name = "ubuntu-shop"
+main = "src/index.tsx"
+compatibility_date = "2026-11-13"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ubuntu-shop-db"
+database_id = "REPLACE_WITH_REAL_D1_DATABASE_ID"
+
+[vars]
+ENVIRONMENT = "production"
+DEFAULT_CURRENCY = "USD"
