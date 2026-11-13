@@ -199,3 +199,27 @@ img{max-width:100%;display:block}
 .button-yellow span,.product-bottom a,.cart-link{font-size:0}
 .product-bottom a,.cart-link{display:grid;place-items:center}
 @media(max-width:560px){.hero-art,.print-visual{padding:0}.hero-hex{opacity:.08}}
+
+
+/* Catalogue navigable et fiches produit */
+.product-card-link{display:block;height:100%}.product-card-link:hover h3{color:var(--yellow)}
+.card-open{display:flex;align-items:center;gap:7px;color:var(--yellow);font-size:8px;letter-spacing:.08em}
+.detail-back{display:inline-flex;margin:0 0 28px;color:var(--yellow);font-size:12px}
+.product-detail{padding-top:48px;padding-bottom:90px}
+.detail-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(300px,.9fr);gap:clamp(30px,5vw,75px);align-items:start}
+.detail-main-image{width:100%;height:min(64vw,620px);min-height:360px;object-fit:cover;background:#061238}
+.detail-thumbnails{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.detail-thumbnails button{padding:0;border:1px solid rgba(255,255,255,.18);background:transparent;cursor:pointer;height:110px;overflow:hidden}
+.detail-thumbnails button.active{border:2px solid var(--yellow)}
+.detail-thumbnails img{width:100%;height:100%;object-fit:cover}
+.gallery-note{font-size:9px;color:#9CAAD0;line-height:1.6}
+.detail-copy{position:sticky;top:25px}
+.detail-copy h1{font-size:clamp(32px,4vw,54px);line-height:1.08;margin:0 0 18px}
+.detail-price{font-size:22px;color:var(--yellow);font-weight:700}
+.detail-description,.detail-copy>p:not(.eyebrow):not(.detail-price){font-size:13px;line-height:1.9;color:#D1D9EF}
+.detail-copy h2{font-size:16px;margin:28px 0 8px}
+.detail-actions{margin-top:30px}
+.related-products{margin-top:85px;padding-top:45px;border-top:1px solid var(--line)}
+.related-products h2{font-size:32px;margin:0 0 28px}
+@media(max-width:760px){.detail-layout{grid-template-columns:1fr}.detail-copy{position:static}.detail-main-image{height:78vw;min-height:280px}.detail-thumbnails button{height:86px}.product-detail{padding-top:30px}.related-products{margin-top:55px}}
+@media(max-width:560px){.product-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.product-info{padding:12px 10px}.card-open{font-size:7px}.detail-copy h1{font-size:34px}}
