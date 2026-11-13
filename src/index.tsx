@@ -33,7 +33,7 @@ app.get('/', (c) => c.html(`<!doctype html>
     <div class="header-actions">
       <label class="sr-only" for="language">Langue</label>
       <select id="language" aria-label="Choisir la langue"><option value="fr">FR</option><option value="en">EN</option></select>
-      <a class="cart-link" href="#oeuvres" aria-label="Découvrir la boutique">↗</a>
+      <a class="cart-link" href="#oeuvres" aria-label="Découvrir la boutique"><svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a>
     </div>
   </header>
 
@@ -43,7 +43,7 @@ app.get('/', (c) => c.html(`<!doctype html>
         <p class="eyebrow" data-fr="L’ART PREND FORME À GOMA" data-en="ART TAKES SHAPE IN GOMA">L’ART PREND FORME À GOMA</p>
         <h1 data-fr="Des créations qui ont une âme." data-en="Creations with a soul.">Des créations qui ont une âme.</h1>
         <p class="hero-description" data-fr="Explorez les œuvres en bois sculpté, les objets personnalisés et les créations imprimées de UBUNTU HOLDING DRC." data-en="Explore sculpted wooden artworks, personalized objects and printed creations by UBUNTU HOLDING DRC.">Explorez les œuvres en bois sculpté, les objets personnalisés et les créations imprimées de UBUNTU HOLDING DRC.</p>
-        <div class="hero-actions"><a class="button button-yellow" href="#oeuvres" data-fr="Découvrir les œuvres" data-en="Discover the artworks">Découvrir les œuvres <span aria-hidden="true">↗</span></a><a class="hero-secondary" href="#sur-mesure" data-fr="Commander une création" data-en="Commission a creation">Commander une création</a></div>
+        <div class="hero-actions"><a class="button button-yellow" href="#oeuvres" data-fr="Découvrir les œuvres" data-en="Discover the artworks">Découvrir les œuvres <span aria-hidden="true"><svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></span></a><a class="hero-secondary" href="#sur-mesure" data-fr="Commander une création" data-en="Commission a creation">Commander une création</a></div>
         <div class="hero-meta"><span><small>GALERIE & BOUTIQUE</small><strong>Goma · RDC</strong></span><span><small>CRÉATIONS</small><strong>Art · Personnalisation · Print</strong></span></div>
       </div>
       <div class="hero-art">
@@ -65,15 +65,15 @@ app.get('/', (c) => c.html(`<!doctype html>
       <div class="product-grid">
         <article class="product-card">
           <div class="product-image"><img src="https://images.unsplash.com/photo-1577083552431-6e5fd01aa342?auto=format&fit=crop&w=900&q=85" alt="Sculpture décorative en bois, visuel d’inspiration" /><span class="sample-tag">EXEMPLE DE MAQUETTE</span><span class="image-index">01</span></div>
-          <div class="product-info"><p class="product-category">SCULPTURE · BOIS</p><h3>Totem des origines</h3><p>Pièce décorative sculptée, inspirée des formes et symboles africains.</p><div class="product-bottom"><strong>À partir de 85 $</strong><a href="#sur-mesure" aria-label="Demander un devis pour Totem des origines">↗</a></div><small class="price-note">Prix fictif indicatif · devis selon dimensions</small></div>
+          <div class="product-info"><p class="product-category">SCULPTURE · BOIS</p><h3>Totem des origines</h3><p>Pièce décorative sculptée, inspirée des formes et symboles africains.</p><div class="product-bottom"><strong>À partir de 85 $</strong><a href="#sur-mesure" aria-label="Demander un devis pour Totem des origines"><svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a></div><small class="price-note">Prix fictif indicatif · devis selon dimensions</small></div>
         </article>
         <article class="product-card">
           <div class="product-image"><img src="https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?auto=format&fit=crop&w=900&q=85" alt="Composition artistique murale, visuel d’inspiration" /><span class="sample-tag">EXEMPLE DE MAQUETTE</span><span class="image-index">02</span></div>
-          <div class="product-info"><p class="product-category">ART MURAL · 3D</p><h3>Mémoire en relief</h3><p>Composition murale en relief pour donner du caractère à un espace.</p><div class="product-bottom"><strong>Sur devis</strong><a href="#sur-mesure" aria-label="Demander un devis pour Mémoire en relief">↗</a></div><small class="price-note">Exemple de création personnalisable</small></div>
+          <div class="product-info"><p class="product-category">ART MURAL · 3D</p><h3>Mémoire en relief</h3><p>Composition murale en relief pour donner du caractère à un espace.</p><div class="product-bottom"><strong>Sur devis</strong><a href="#sur-mesure" aria-label="Demander un devis pour Mémoire en relief"><svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a></div><small class="price-note">Exemple de création personnalisable</small></div>
         </article>
         <article class="product-card">
           <div class="product-image"><img src="https://images.unsplash.com/photo-1579783901586-d88db74b4fe4?auto=format&fit=crop&w=900&q=85" alt="Objet d’art exposé, visuel d’inspiration" /><span class="sample-tag">EXEMPLE DE MAQUETTE</span><span class="image-index">03</span></div>
-          <div class="product-info"><p class="product-category">OBJET DÉCORATIF</p><h3>Équilibre naturel</h3><p>Objet sculptural à poser, réalisé sur commande selon le modèle choisi.</p><div class="product-bottom"><strong>À partir de 45 $</strong><a href="#sur-mesure" aria-label="Demander un devis pour Équilibre naturel">↗</a></div><small class="price-note">Prix fictif indicatif · à confirmer</small></div>
+          <div class="product-info"><p class="product-category">OBJET DÉCORATIF</p><h3>Équilibre naturel</h3><p>Objet sculptural à poser, réalisé sur commande selon le modèle choisi.</p><div class="product-bottom"><strong>À partir de 45 $</strong><a href="#sur-mesure" aria-label="Demander un devis pour Équilibre naturel"><svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a></div><small class="price-note">Prix fictif indicatif · à confirmer</small></div>
         </article>
       </div>
       <div class="section-footnote">Les photographies et références produits de cette maquette sont illustratives. Elles ne représentent pas encore le catalogue réel de UBUNTU SHOP.</div>
@@ -82,22 +82,22 @@ app.get('/', (c) => c.html(`<!doctype html>
     <section class="collections-section section-wrap" id="collections">
       <div class="section-heading"><div><p class="eyebrow">SÉLECTION · 02</p><h2>Nos univers créatifs</h2></div><p>Une même exigence de création, déclinée dans plusieurs univers complémentaires.</p></div>
       <div class="collection-grid">
-        <a class="collection-card collection-art" href="#oeuvres"><span>01 / ART & DÉCORATION</span><strong>Œuvres en bois<br/>et créations 3D</strong><b>Explorer ↗</b></a>
-        <a class="collection-card collection-gift" href="#sur-mesure"><span>02 / CADEAUX</span><strong>Objets personnalisés<br/>et souvenirs</strong><b>Imaginer ↗</b></a>
-        <a class="collection-card collection-print" href="#imprimerie"><span>03 / IMPRIMERIE</span><strong>Cartes, invitations<br/>et supports imprimés</strong><b>Découvrir ↗</b></a>
+        <a class="collection-card collection-art" href="#oeuvres"><span>01 / ART & DÉCORATION</span><strong>Œuvres en bois<br/>et créations 3D</strong><b>Explorer <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></b></a>
+        <a class="collection-card collection-gift" href="#sur-mesure"><span>02 / CADEAUX</span><strong>Objets personnalisés<br/>et souvenirs</strong><b>Imaginer <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></b></a>
+        <a class="collection-card collection-print" href="#imprimerie"><span>03 / IMPRIMERIE</span><strong>Cartes, invitations<br/>et supports imprimés</strong><b>Découvrir <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></b></a>
       </div>
     </section>
 
     <section class="print-section section-wrap" id="imprimerie">
       <div class="print-visual"><img src="https://images.unsplash.com/photo-1589330694653-ded6df03f754?auto=format&fit=crop&w=1100&q=85" alt="Papeterie et cartes imprimées, visuel d’inspiration" /><span class="sample-tag">VISUEL ILLUSTRATIF</span></div>
-      <div class="print-copy"><p class="eyebrow">SÉLECTION · 03</p><h2>Le papier aussi devient création.</h2><p>Invitations, cartes de vœux, cartes postales, cartes de service, cartes de visite et supports de communication : des impressions pensées pour marquer les esprits.</p><ul><li>Formats et papiers au choix</li><li>Impression recto ou recto-verso</li><li>Finitions et quantités personnalisables</li></ul><a class="text-link" href="#sur-mesure">Parler de mon projet ↗</a></div>
+      <div class="print-copy"><p class="eyebrow">SÉLECTION · 03</p><h2>Le papier aussi devient création.</h2><p>Invitations, cartes de vœux, cartes postales, cartes de service, cartes de visite et supports de communication : des impressions pensées pour marquer les esprits.</p><ul><li>Formats et papiers au choix</li><li>Impression recto ou recto-verso</li><li>Finitions et quantités personnalisables</li></ul><a class="text-link" href="#sur-mesure">Parler de mon projet <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a></div>
     </section>
 
-    <section class="custom-section" id="sur-mesure"><div class="custom-inner section-wrap"><div><p class="eyebrow">VOTRE IDÉE, NOTRE SAVOIR-FAIRE</p><h2>Une pièce unique commence par une conversation.</h2><p>Vous avez un modèle, une dimension ou une idée précise ? Présentez-nous votre projet. Nous étudierons les possibilités et vous proposerons un devis adapté.</p></div><div class="custom-cta"><span>CRÉATION SUR COMMANDE</span><a class="button button-yellow" href="https://wa.me/243999214448?text=Bonjour%20UBUNTU%20SHOP%2C%20je%20souhaite%20discuter%20d'une%20cr%C3%A9ation%20sur%20mesure." target="_blank" rel="noopener">Demander un devis <b>↗</b></a><small>Échange direct avec notre équipe à Goma</small></div></div></section>
+    <section class="custom-section" id="sur-mesure"><div class="custom-inner section-wrap"><div><p class="eyebrow">VOTRE IDÉE, NOTRE SAVOIR-FAIRE</p><h2>Une pièce unique commence par une conversation.</h2><p>Vous avez un modèle, une dimension ou une idée précise ? Présentez-nous votre projet. Nous étudierons les possibilités et vous proposerons un devis adapté.</p></div><div class="custom-cta"><span>CRÉATION SUR COMMANDE</span><a class="button button-yellow" href="https://wa.me/243999214448?text=Bonjour%20UBUNTU%20SHOP%2C%20je%20souhaite%20discuter%20d'une%20cr%C3%A9ation%20sur%20mesure." target="_blank" rel="noopener">Demander un devis <b><svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></b></a><small>Échange direct avec notre équipe à Goma</small></div></div></section>
 
     <section class="how-section section-wrap"><div class="section-heading"><div><p class="eyebrow">SIMPLE & DIRECT</p><h2>Comment commander ?</h2></div><p>Un parcours clair, de la découverte à la réception de votre création.</p></div><div class="steps-grid"><div><span>01</span><h3>Choisissez</h3><p>Parcourez les créations ou décrivez votre besoin.</p></div><div><span>02</span><h3>Échangez</h3><p>Confirmez les détails, le prix et le délai avec l’équipe.</p></div><div><span>03</span><h3>Confirmez</h3><p>Validez la commande et les modalités de paiement convenues.</p></div><div><span>04</span><h3>Recevez</h3><p>Retirez votre commande ou organisez la livraison.</p></div></div></section>
 
-    <section class="contact-section section-wrap" id="contact"><div><p class="eyebrow">UBUNTU HOLDING DRC · GOMA</p><h2>Faisons exister votre prochaine idée.</h2></div><div class="contact-details"><a href="https://wa.me/243999214448" target="_blank" rel="noopener">WhatsApp · +243 999 214 448 ↗</a><a href="mailto:ubunturdc@gmail.com">ubunturdc@gmail.com</a><p>23 Av. Kinshasa, Route 1 km Témoin, Goma, RDC</p></div></section>
+    <section class="contact-section section-wrap" id="contact"><div><p class="eyebrow">UBUNTU HOLDING DRC · GOMA</p><h2>Faisons exister votre prochaine idée.</h2></div><div class="contact-details"><a href="https://wa.me/243999214448" target="_blank" rel="noopener">WhatsApp · +243 999 214 448 <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a><a href="mailto:ubunturdc@gmail.com">ubunturdc@gmail.com</a><p>23 Av. Kinshasa, Route 1 km Témoin, Goma, RDC</p></div></section>
   </main>
   <footer class="site-footer"><div class="footer-pattern" aria-hidden="true"><img src="/assets/brand/hexagons-tricolor.png" alt="" /></div><div class="footer-inner"><span>© <span id="year"></span> UBUNTU HOLDING DRC</span><span>DESIGN & DIGITAL · RIGOURA DESIGN</span><span>MAQUETTE DE PRÉSENTATION · VERSION DE TRAVAIL</span></div></footer>
   <script>
