@@ -21,8 +21,7 @@ app.get('/', (c) => c.html(`<!doctype html>
   <div class="top-pattern" aria-hidden="true"><img src="/assets/brand/hexagons-outline.png" alt="" /></div>
   <header class="site-header">
     <a class="brand" href="/" aria-label="Ubuntu Shop, accueil">
-      <img src="/assets/brand/ubuntu-symbol-blue.png" alt="" />
-      <span><strong>UBUNTU</strong><small>SHOP · UBUNTU HOLDING DRC</small></span>
+      <img src="/assets/brand/ubuntu-symbol-blue.png" alt="UBUNTU" class="brand-logo-white" />
     </a>
     <nav class="main-nav" aria-label="Navigation principale">
       <a href="#oeuvres" data-fr="Œuvres" data-en="Artworks">Œuvres</a>
@@ -47,8 +46,8 @@ app.get('/', (c) => c.html(`<!doctype html>
         <div class="hero-meta"><span><small>GALERIE & BOUTIQUE</small><strong>Goma · RDC</strong></span><span><small>CRÉATIONS</small><strong>Art · Personnalisation · Print</strong></span></div>
       </div>
       <div class="hero-art">
-        <img class="hero-photo" src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=1200&q=85" alt="Œuvre murale en bois sculpté" />
-        <div class="hero-photo-caption"><span>01 / GALERIE UBUNTU</span><strong>La matière, le geste, l’idée.</strong></div>
+        <img class="hero-photo" src="https://images.unsplash.com/photo-1563770660941-10a63607739e?auto=format&fit=crop&w=1400&q=88" alt="Imprimante grand format en atelier produisant une bâche publicitaire" />
+        <div class="hero-photo-caption"><span>ATELIER D’IMPRESSION</span><strong>De la création au support imprimé.</strong></div>
         <img class="hero-hex" src="/assets/brand/hexagons-tricolor.png" alt="" aria-hidden="true" />
       </div>
       <div class="hero-bottom-pattern" aria-hidden="true"><img src="/assets/brand/hexagons-tricolor.png" alt="" /></div>
