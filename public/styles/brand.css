@@ -223,3 +223,9 @@ img{max-width:100%;display:block}
 .related-products h2{font-size:32px;margin:0 0 28px}
 @media(max-width:760px){.detail-layout{grid-template-columns:1fr}.detail-copy{position:static}.detail-main-image{height:78vw;min-height:280px}.detail-thumbnails button{height:86px}.product-detail{padding-top:30px}.related-products{margin-top:55px}}
 @media(max-width:560px){.product-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.product-info{padding:12px 10px}.card-open{font-size:7px}.detail-copy h1{font-size:34px}}
+
+/* En-tête : logo officiel seul, en blanc */
+.site-header .brand{display:flex;align-items:center;gap:0}
+.site-header .brand span{display:none!important}
+.site-header .brand-logo-white{display:block;width:54px;height:54px;object-fit:contain;filter:brightness(0) invert(1)}
+.hero-photo{object-fit:cover}
