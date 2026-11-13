@@ -9,7 +9,7 @@ binding = "ASSETS"
 [[d1_databases]]
 binding = "DB"
 database_name = "ubuntu-shop-db"
-database_id = "REPLACE_WITH_REAL_D1_DATABASE_ID"
+database_id = "8e0c4d53-656f-4b1a-a0a7-01bcec6b1b2e"
 
 [vars]
 ENVIRONMENT = "production"
