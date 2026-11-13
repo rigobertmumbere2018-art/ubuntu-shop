@@ -14,7 +14,7 @@ app.get('/', (c) => c.html(`<!doctype html>
   <meta name="theme-color" content="#00144B" />
   <meta name="description" content="UBUNTU SHOP — la boutique en ligne de UBUNTU HOLDING DRC, à Goma." />
   <title>UBUNTU SHOP — UBUNTU HOLDING DRC</title>
-  <link rel="icon" type="image/png" href="/assets/brand/ubuntu-symbol-navy.png" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="stylesheet" href="/styles/brand.css" />
 </head>
 <body>
@@ -39,9 +39,9 @@ app.get('/', (c) => c.html(`<!doctype html>
   <main>
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow" data-fr="LA BOUTIQUE OFFICIELLE" data-en="THE OFFICIAL STORE">LA BOUTIQUE OFFICIELLE</p>
+        
         <h1 data-fr="Vos idées prennent forme." data-en="Where your ideas take shape.">Vos idées prennent forme.</h1>
-        <p class="hero-description" data-fr="Découvrez les produits et services proposés par UBUNTU HOLDING DRC. Une boutique pensée pour vous accompagner de la commande à la livraison." data-en="Explore products and services from UBUNTU HOLDING DRC. A store designed to support you from order to delivery.">Découvrez les produits et services proposés par UBUNTU HOLDING DRC. Une boutique pensée pour vous accompagner de la commande à la livraison.</p>
+        <p class="hero-description" data-fr="Découvrez nos créations personnalisées et les services de UBUNTU HOLDING DRC." data-en="Explore custom creations and services from UBUNTU HOLDING DRC.">Découvrez les produits et services proposés par UBUNTU HOLDING DRC. Une boutique pensée pour vous accompagner de la commande à la livraison.</p>
         <a class="button button-yellow" href="#boutique" data-fr="Explorer la boutique" data-en="Explore the shop">Explorer la boutique <span aria-hidden="true">↗</span></a>
         <div class="hero-meta"><span>GOMA · RDC</span><span>USD / CDF</span><span>FR / EN</span></div>
       </div>
@@ -55,8 +55,8 @@ app.get('/', (c) => c.html(`<!doctype html>
 
     <section class="shop-section section-wrap" id="boutique">
       <div class="section-heading">
-        <div><p class="eyebrow" data-fr="NOTRE SÉLECTION" data-en="OUR SELECTION">NOTRE SÉLECTION</p><h2 data-fr="La boutique" data-en="The shop">La boutique</h2></div>
-        <p data-fr="Les articles disponibles seront présentés ici avec leurs caractéristiques et leurs prix." data-en="Available items will be listed here with their details and prices.">Les articles disponibles seront présentés ici avec leurs caractéristiques et leurs prix.</p>
+        <div><h2 data-fr="La boutique" data-en="The shop">La boutique</h2></div>
+        <p data-fr="Découvrez quelques-unes de nos réalisations." data-en="Discover a selection of our creations.">Les articles disponibles seront présentés ici avec leurs caractéristiques et leurs prix.</p>
       </div>
       <div class="catalog-tools"><label class="search-box"><span aria-hidden="true">⌕</span><input id="product-search" type="search" placeholder="Rechercher un produit…" data-placeholder-fr="Rechercher un produit…" data-placeholder-en="Search products…" /></label><span class="currency-note" data-fr="Prix affichés en USD · équivalent CDF selon le taux configuré" data-en="Prices in USD · CDF equivalent based on configured exchange rate">Prix affichés en USD · équivalent CDF selon le taux configuré</span></div>
       <div id="product-grid" class="product-grid" aria-live="polite"><div class="empty-state"><span class="empty-mark">⬡</span><h3 data-fr="Le catalogue se prépare" data-en="The catalogue is being prepared">Le catalogue se prépare</h3><p data-fr="Les produits seront publiés ici dès leur validation par l’équipe UBUNTU SHOP." data-en="Products will appear here once approved by the UBUNTU SHOP team.">Les produits seront publiés ici dès leur validation par l’équipe UBUNTU SHOP.</p></div></div>
@@ -64,10 +64,10 @@ app.get('/', (c) => c.html(`<!doctype html>
 
     <section class="about-section" id="apropos">
       <div class="about-pattern" aria-hidden="true"><img src="/assets/brand/hexagons-outline.png" alt="" /></div>
-      <div class="section-wrap about-content"><div><p class="eyebrow" data-fr="NOTRE MAISON" data-en="OUR COMPANY">NOTRE MAISON</p><h2>UBUNTU HOLDING DRC</h2></div><div><p data-fr="UBUNTU SHOP est l’espace de présentation et de commande des produits et services de UBUNTU HOLDING DRC, basé à Goma, en République démocratique du Congo." data-en="UBUNTU SHOP is the online space to discover and order products and services from UBUNTU HOLDING DRC, based in Goma, Democratic Republic of the Congo.">UBUNTU SHOP est l’espace de présentation et de commande des produits et services de UBUNTU HOLDING DRC, basé à Goma, en République démocratique du Congo.</p><a class="text-link" href="mailto:ubunturdc@gmail.com">En savoir plus <span aria-hidden="true">↗</span></a></div></div>
+      <div class="section-wrap about-content"><div><h2>UBUNTU HOLDING DRC</h2></div><div><p data-fr="UBUNTU SHOP est l’espace de présentation et de commande des produits et services de UBUNTU HOLDING DRC, basé à Goma, en République démocratique du Congo." data-en="UBUNTU SHOP is the online space to discover and order products and services from UBUNTU HOLDING DRC, based in Goma, Democratic Republic of the Congo.">UBUNTU SHOP est l’espace de présentation et de commande des produits et services de UBUNTU HOLDING DRC, basé à Goma, en République démocratique du Congo.</p><a class="text-link" href="mailto:ubunturdc@gmail.com">En savoir plus <span aria-hidden="true">↗</span></a></div></div>
     </section>
 
-    <section class="contact-section section-wrap" id="contact"><div><p class="eyebrow" data-fr="UNE QUESTION ?" data-en="HAVE A QUESTION?">UNE QUESTION ?</p><h2 data-fr="Parlons de votre projet." data-en="Let's talk about your project.">Parlons de votre projet.</h2></div><div class="contact-details"><a href="https://wa.me/243999214448" target="_blank" rel="noopener">WhatsApp · +243 999 214 448 ↗</a><a href="mailto:ubunturdc@gmail.com">ubunturdc@gmail.com</a><p>23 Av. Kinshasa, Route 1 km Témoin, Goma, RDC</p></div></section>
+    <section class="contact-section section-wrap" id="contact"><div><h2 data-fr="Parlons de votre projet." data-en="Let's talk about your project.">Parlons de votre projet.</h2></div><div class="contact-details"><a href="https://wa.me/243999214448" target="_blank" rel="noopener">WhatsApp · +243 999 214 448 ↗</a><a href="mailto:ubunturdc@gmail.com">ubunturdc@gmail.com</a><p>23 Av. Kinshasa, Route 1 km Témoin, Goma, RDC</p></div></section>
   </main>
   <footer class="site-footer"><div class="footer-pattern" aria-hidden="true"><img src="/assets/brand/hexagons-tricolor.png" alt="" /></div><div class="footer-inner"><span>© <span id="year"></span> UBUNTU HOLDING DRC</span><span>DESIGN & DIGITAL · RIGOURA DESIGN</span></div></footer>
   <script>
@@ -79,21 +79,29 @@ app.get('/', (c) => c.html(`<!doctype html>
       document.querySelectorAll('[data-placeholder-' + lang + ']').forEach(el => { el.placeholder = el.getAttribute('data-placeholder-' + lang); });
     });
     document.getElementById('year').textContent = new Date().getFullYear();
-    fetch('/api/products').then(r => r.ok ? r.json() : []).then(products => {
-      if (!Array.isArray(products) || products.length === 0) return;
+    const demoProducts = [
+      { image:'/assets/products/porte-nom-esther.jpg', category:'Décoration personnalisée', title:'Porte-nom décoratif « Esther »', description:'Création décorative personnalisée avec prénom, motifs floraux et support de présentation.', price:'Prix sur demande' },
+      { image:'/assets/products/coffret-saint-valentin.jpg', category:'Cadeaux personnalisés', title:'Ensemble cadeau Saint-Valentin', description:'Ensemble de créations personnalisées en bois : plaque gravée, cœur porte-clés et décoration florale.', price:'Prix sur demande' }
+    ];
+    function renderProducts(products) {
       const grid = document.getElementById('product-grid');
       grid.replaceChildren();
       products.forEach(product => {
         const card = document.createElement('article'); card.className = 'product-card';
-        const visual = document.createElement('div'); visual.className = 'product-image'; visual.textContent = '⬡';
+        const visual = document.createElement('div'); visual.className = 'product-image';
+        const img = document.createElement('img'); img.src = product.image_url || product.image; img.alt = product.title || product.reference || 'Réalisation UBUNTU';
+        visual.append(img);
         const info = document.createElement('div'); info.className = 'product-info';
-        const category = document.createElement('p'); category.className = 'product-category'; category.textContent = product.support_fr || product.category_id || '';
-        const title = document.createElement('h3'); title.textContent = product.reference || 'Article';
-        const description = document.createElement('p'); description.textContent = product.description_fr || '';
+        const category = document.createElement('p'); category.className = 'product-category'; category.textContent = product.support_fr || product.category || product.category_id || '';
+        const title = document.createElement('h3'); title.textContent = product.title || product.reference || 'Article';
+        const description = document.createElement('p'); description.textContent = product.description_fr || product.description || '';
         const price = document.createElement('strong'); price.textContent = product.price_min_usd != null ? Number(product.price_min_usd).toLocaleString('en-US', {style:'currency',currency:'USD'}) : 'Prix sur demande';
         info.append(category, title, description, price); card.append(visual, info); grid.append(card);
       });
-    }).catch(() => {});
+    }
+    fetch('/api/products').then(r => r.ok ? r.json() : []).then(products => {
+      renderProducts(Array.isArray(products) && products.length ? products : demoProducts);
+    }).catch(() => renderProducts(demoProducts));
   </script>
 </body></html>`));
 
