@@ -184,3 +184,18 @@ img{max-width:100%;display:block}
 .product-bottom strong{font-size:11px}.product-bottom a{width:25px;height:25px}.sample-tag{top:7px;left:7px;padding:5px 6px;font-size:6px}
 .collection-grid{gap:9px}.collection-card{min-height:185px;padding:15px}.collection-card strong{font-size:19px}
 .print-visual{height:250px}.steps-grid{gap:22px 15px}}
+
+
+/* Ajustements de finition — motifs discrets et iconographie vectorielle */
+.hero-art,.print-visual{background:transparent;padding:0}
+.hero-hex{opacity:.10}
+.collection-card:after{content:"";width:180px;height:180px;right:-28px;bottom:-42px;border:1px solid rgba(255,255,255,.10);transform:rotate(30deg);border-radius:28px}
+.top-pattern img,.hero-bottom-pattern img,.footer-pattern img{opacity:.10}
+.about-pattern{opacity:.10}
+.hero-bottom-pattern{background:transparent}
+.icon-svg{display:inline-block;width:18px;height:18px;flex:0 0 auto;vertical-align:middle;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.button .icon-svg{width:19px;height:19px}
+.product-bottom a .icon-svg,.cart-link .icon-svg{width:17px;height:17px}
+.button-yellow span,.product-bottom a,.cart-link{font-size:0}
+.product-bottom a,.cart-link{display:grid;place-items:center}
+@media(max-width:560px){.hero-art,.print-visual{padding:0}.hero-hex{opacity:.08}}
