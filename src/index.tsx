@@ -43,7 +43,7 @@ app.get('/', (c) => c.html(`<!doctype html>
         <h1 data-fr="Vos idées prennent forme." data-en="Where your ideas take shape.">Vos idées prennent forme.</h1>
         <p class="hero-description" data-fr="Découvrez nos créations personnalisées et les services de UBUNTU HOLDING DRC." data-en="Explore custom creations and services from UBUNTU HOLDING DRC.">Découvrez les produits et services proposés par UBUNTU HOLDING DRC. Une boutique pensée pour vous accompagner de la commande à la livraison.</p>
         <a class="button button-yellow" href="#boutique" data-fr="Explorer la boutique" data-en="Explore the shop">Explorer la boutique <span aria-hidden="true">↗</span></a>
-        <div class="hero-meta"><span>GOMA · RDC</span><span>USD / CDF</span><span>FR / EN</span></div>
+        <div class="hero-meta"><span><small>LOCALISATION</small><strong>Goma, RDC</strong></span><span><small>DEVISES</small><strong>USD · CDF</strong></span><span><small>LANGUES</small><strong>Français · English</strong></span></div>
       </div>
       <div class="hero-art" aria-hidden="true">
         <img class="hero-hex hero-hex-brown" src="/assets/brand/hexagons-solid.png" alt="" />
