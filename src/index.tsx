@@ -21,9 +21,7 @@ app.get('/', (c) => c.html(`<!doctype html>
 <body>
   <div class="top-pattern" aria-hidden="true"><img src="/assets/brand/hexagons-outline.png" alt="" /></div>
   <header class="site-header">
-    <a class="brand" href="/" aria-label="Ubuntu Shop, accueil">
-      <img src="/assets/brand/ubuntu-symbol-blue.png" alt="UBUNTU" class="brand-logo-white" />
-    </a>
+    <a class="brand" href="/" aria-label="SHOP UB HOLDING, accueil"><span class="brand-name">SHOP UB HOLDING</span></a>
     <div class="header-search"><label class="sr-only" for="shop-search">Rechercher dans la boutique</label><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg><input id="shop-search" type="search" placeholder="Cherchez une création, un cadeau, une impression…" autocomplete="off"><div id="search-suggestions" class="search-suggestions" hidden></div></div>
     <div class="header-actions"><button class="header-action" id="favorites-open" type="button" aria-label="Mes favoris"><span class="action-icon">♡</span><span>Favoris <b id="favorite-count">0</b></span></button><button class="header-action" id="cart-open" type="button" aria-label="Mon panier"><span class="action-icon">▢</span><span>Panier <b id="cart-count">0</b></span></button><label class="sr-only" for="language">Langue</label><select id="language" aria-label="Choisir la langue"><option value="fr">FR</option><option value="en">EN</option></select></div>
   </header>
