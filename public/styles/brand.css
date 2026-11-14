@@ -487,3 +487,17 @@ html{scroll-behavior:smooth}
 @media(prefers-reduced-motion:reduce){
   .hero-emblem img{animation:none!important}
 }
+
+
+/* Ajustement demandé : icône à 75 % et mouvement plus marqué */
+.hero-emblem{width:clamp(195px,20.25vw,322px)!important}
+.hero-emblem img{animation:ubuntu-emblem-float 4.8s ease-in-out infinite!important}
+@keyframes ubuntu-emblem-float{
+  0%,100%{transform:translate3d(0,0,0) rotate(-1.5deg) scale(1)}
+  25%{transform:translate3d(0,-15px,0) rotate(1.2deg) scale(1.025)}
+  50%{transform:translate3d(0,-25px,0) rotate(0deg) scale(1.04)}
+  75%{transform:translate3d(0,-12px,0) rotate(-1.2deg) scale(1.02)}
+}
+@media(max-width:900px){.hero-emblem{width:clamp(143px,21.8vw,210px)!important}}
+@media(max-width:700px){.hero-emblem{width:clamp(109px,31.5vw,165px)!important}}
+@media(prefers-reduced-motion:reduce){.hero-emblem img{animation:none!important}}
