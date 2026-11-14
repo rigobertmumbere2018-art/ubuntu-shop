@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS admin_login_attempts (attempt_key TEXT PRIMARY KEY, failure_count INTEGER NOT NULL DEFAULT 0, window_started_at TEXT NOT NULL, blocked_until TEXT); CREATE INDEX IF NOT EXISTS idx_admin_login_attempts_blocked ON admin_login_attempts(blocked_until);
