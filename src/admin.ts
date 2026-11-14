@@ -4,7 +4,7 @@ type AdminEnv = { Bindings: { DB: D1Database; ADMIN_BOOTSTRAP_KEY?: string } };
 type AdminRole = 'super_admin' | 'admin';
 
 const SESSION_HOURS = 8;
-const PBKDF2_ITERATIONS = 310000;
+const PBKDF2_ITERATIONS = 100000;
 const encoder = new TextEncoder();
 
 function randomToken(bytes = 32): string {
