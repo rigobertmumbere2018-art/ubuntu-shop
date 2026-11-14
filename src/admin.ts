@@ -23,7 +23,7 @@ async function sha256(value: string): Promise<string> {
 async function passwordHash(password: string): Promise<string> {
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const key = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']);
-  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: PBKDF2_ITERATIONS }, key, 256);
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: new Uint8Array(salt).buffer, iterations: PBKDF2_ITERATIONS }, key, 256);
   return 'pbkdf2$' + PBKDF2_ITERATIONS + '$' + toBase64(salt) + '$' + toBase64(new Uint8Array(bits));
 }
 async function verifyPassword(password: string, stored: string): Promise<boolean> {
@@ -31,7 +31,7 @@ async function verifyPassword(password: string, stored: string): Promise<boolean
     const [scheme, rounds, saltText, hashText] = stored.split('$');
     if (scheme !== 'pbkdf2' || !rounds || !saltText || !hashText) return false;
     const key = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']);
-    const bits = new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: fromBase64(saltText), iterations: Number(rounds) }, key, 256));
+    const bits = new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: new Uint8Array(fromBase64(saltText)).buffer, iterations: Number(rounds) }, key, 256));
     const expected = fromBase64(hashText);
     if (bits.length !== expected.length) return false;
     let diff = 0;
@@ -63,7 +63,7 @@ export function registerAdminRoutes(app: Hono<AdminEnv>) {
   app.post('/api/admin/bootstrap', async (c) => {
     const envKey = c.env.ADMIN_BOOTSTRAP_KEY;
     if (!envKey) return jsonError(c, 'La clé de première installation ADMIN_BOOTSTRAP_KEY n’est pas configurée.', 503);
-    const body = await c.req.json<{ bootstrapKey?: string; name?: string; email?: string; password?: string }>().catch(() => ({}));
+    const body = await c.req.json<{ bootstrapKey?: string; name?: string; email?: string; password?: string }>().catch(() => ({} as { bootstrapKey?: string; name?: string; email?: string; password?: string }));
     if (!body.bootstrapKey || body.bootstrapKey !== envKey) return jsonError(c, 'Clé de première installation invalide.', 403);
     const count = await c.env.DB.prepare('SELECT COUNT(*) AS total FROM users').first<{ total: number }>();
     if (count && count.total > 0) return jsonError(c, 'Le compte initial existe déjà. Utilisez la connexion.', 409);
@@ -83,7 +83,7 @@ export function registerAdminRoutes(app: Hono<AdminEnv>) {
   });
 
   app.post('/api/admin/login', async (c) => {
-    const body = await c.req.json<{ email?: string; password?: string }>().catch(() => ({}));
+    const body = await c.req.json<{ email?: string; password?: string }>().catch(() => ({} as { email?: string; password?: string }));
     const email = String(body.email || '').trim().toLowerCase();
     const password = String(body.password || '');
     if (!validEmail(email) || !password || password.length > 128) return jsonError(c, 'Adresse e-mail ou mot de passe incorrect.', 401);
@@ -104,7 +104,7 @@ export function registerAdminRoutes(app: Hono<AdminEnv>) {
     if (!token) return null;
     return c.env.DB.prepare("SELECT s.id AS session_id,s.user_id,s.csrf_hash,s.expires_at,u.name,u.email,u.is_active,r.name AS role FROM admin_sessions s JOIN users u ON u.id=s.user_id JOIN roles r ON r.id=u.role_id WHERE s.token_hash=? AND s.revoked_at IS NULL AND s.expires_at>? AND u.is_active=1 LIMIT 1")
       .bind(await sha256(token), new Date().toISOString())
-      .first<{session_id:string;user_id:string;csrf_hash:string;expires_at:string;name:string;email:string;is_active:number;role:AdminRole}>();
+      .first() as Promise<{session_id:string;user_id:string;csrf_hash:string;expires_at:string;name:string;email:string;is_active:number;role:AdminRole} | null>;
   };
   const requireCsrf = async (c: any, session: { csrf_hash: string }) => {
     const cookie = cookieValue(c.req.header('Cookie'), 'ubuntu_admin_csrf');
@@ -143,7 +143,7 @@ export function registerAdminRoutes(app: Hono<AdminEnv>) {
     if (!session) return jsonError(c, 'Connexion requise.', 401);
     if (session.role !== 'super_admin') return jsonError(c, 'Réservé au super administrateur.', 403);
     if (!await requireCsrf(c, session)) return jsonError(c, 'Vérification de sécurité échouée.', 403);
-    const body = await c.req.json<{ name?:string; email?:string; password?:string }>().catch(() => ({}));
+    const body = await c.req.json<{ name?:string; email?:string; password?:string }>().catch(() => ({} as { name?: string; email?: string; password?: string }));
     const name = String(body.name || '').trim();
     const email = String(body.email || '').trim().toLowerCase();
     const password = String(body.password || '');
