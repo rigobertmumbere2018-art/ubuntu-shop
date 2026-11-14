@@ -61,6 +61,7 @@ export function registerAdminRoutes(app: Hono<AdminEnv>) {
   });
 
   app.post('/api/admin/bootstrap', async (c) => {
+    try {
     const envKey = c.env.ADMIN_BOOTSTRAP_KEY;
     if (!envKey) return jsonError(c, 'La clé de première installation ADMIN_BOOTSTRAP_KEY n’est pas configurée.', 503);
     const body = await c.req.json<{ bootstrapKey?: string; name?: string; email?: string; password?: string }>().catch(() => ({} as { bootstrapKey?: string; name?: string; email?: string; password?: string }));
@@ -80,6 +81,10 @@ export function registerAdminRoutes(app: Hono<AdminEnv>) {
       c.env.DB.prepare('INSERT INTO users (id,name,email,password_hash,role_id,is_active) VALUES (?,?,?,?,?,1)').bind(crypto.randomUUID(), name, email, await passwordHash(password), roleId)
     ]);
     return c.json({ ok: true, message: 'Compte super administrateur créé. Vous pouvez maintenant vous connecter.' }, 201);
+    } catch (error) {
+      console.error('ADMIN_BOOTSTRAP_FAILURE', error);
+      return c.json({ ok: false, error: 'Échec technique lors de la création du compte. Consultez les journaux du Worker.', diagnostic: error instanceof Error ? error.message : String(error) }, 500);
+    }
   });
 
   app.post('/api/admin/login', async (c) => {
@@ -194,7 +199,7 @@ const adminPage = `<!doctype html>
 let csrfToken='';let setupMode=false;let currentUser=null;
 const $=id=>document.getElementById(id);
 const cookie=name=>document.cookie.split('; ').find(x=>x.startsWith(name+'='))?.split('=').slice(1).join('=')||'';
-async function api(path,options={}){const headers={'Content-Type':'application/json',...(options.headers||{})};if(options.method&&options.method!=='GET'){csrfToken=decodeURIComponent(cookie('ubuntu_admin_csrf'));if(csrfToken)headers['X-CSRF-Token']=csrfToken}const response=await fetch(path,{credentials:'same-origin',...options,headers});const data=await response.json().catch(()=>({error:'Réponse serveur invalide'}));if(!response.ok)throw new Error(data.error||'Une erreur est survenue.');return data}
+async function api(path,options={}){const headers={'Content-Type':'application/json',...(options.headers||{})};if(options.method&&options.method!=='GET'){csrfToken=decodeURIComponent(cookie('ubuntu_admin_csrf'));if(csrfToken)headers['X-CSRF-Token']=csrfToken}const response=await fetch(path,{credentials:'same-origin',...options,headers});const raw=await response.text();let data;try{data=JSON.parse(raw)}catch{throw new Error('Réponse serveur non JSON (HTTP '+response.status+'). '+raw.slice(0,180))}if(!response.ok)throw new Error(data.error||'Erreur HTTP '+response.status);return data}
 function message(text,ok=false,id='auth-message'){$(id).textContent=text;$(id).className='admin-message'+(ok?' ok':'')}
 function showLogin(setup){setupMode=setup;$('auth-view').classList.remove('admin-hidden');$('dashboard').classList.add('admin-hidden');$('auth-title').textContent=setup?'Créer le super administrateur':'Connexion administrateur';$('auth-description').textContent=setup?'Première installation : créez le compte principal. La clé d’initialisation est fournie séparément.':'Accédez à votre espace de gestion UBUNTU SHOP.';$('setup-name').classList.toggle('admin-hidden',!setup);$('setup-key').classList.toggle('admin-hidden',!setup);$('auth-submit').textContent=setup?'Créer le compte super administrateur':'Se connecter';$('auth-message').textContent=''}
 async function loadUsers(){const data=await api('/api/admin/users');$('users-list').innerHTML=data.users.map(u=>'<div class="admin-user"><div><strong>'+escapeHtml(u.name)+'</strong><small>'+escapeHtml(u.email)+' · '+escapeHtml(u.role)+(u.is_active?' · Actif':' · Désactivé')+'</small></div>'+(u.is_active&&u.id!==currentUser.id?'<button class="danger" data-disable="'+u.id+'">Désactiver</button>':'')+'</div>').join('')||'<p class="admin-muted">Aucun compte supplémentaire.</p>'}
