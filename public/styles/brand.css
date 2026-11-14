@@ -362,3 +362,9 @@ html{scroll-behavior:smooth}
  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
  .motion-ready .reveal-on-scroll{opacity:1;transform:none}
 }
+
+
+/* Identité de la boutique dans l'en-tête : remplacement du logo par le nom */
+.site-header .brand{min-width:0!important;gap:0!important;text-decoration:none;white-space:nowrap}
+.site-header .brand-name{display:block!important;color:#F0E912;font-family:'Century Gothic',Arial,sans-serif;font-size:clamp(15px,1.45vw,21px);font-weight:700;letter-spacing:.075em;line-height:1.15}
+@media(max-width:560px){.site-header .brand-name{font-size:14px;letter-spacing:.035em}}
