@@ -288,3 +288,45 @@ img{max-width:100%;display:block}
  .detail-description-panel{padding:20px 16px}
  .detail-thumbnails button{flex-basis:76px;height:76px}
 }
+
+/* Fiche produit — disposition marketplace, adaptée à la charte UBUNTU */
+.detail-breadcrumb{display:flex;gap:9px;align-items:center;flex-wrap:wrap;font-size:10px;color:#aebbdc;margin:0 0 25px}
+.detail-breadcrumb a{color:#f0e912;text-decoration:none}
+.detail-back{display:inline-block;margin:0 0 20px;color:#f0e912;font-size:11px;text-decoration:none}
+.detail-layout{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(340px,.85fr);gap:clamp(28px,4vw,62px);align-items:start}
+.detail-gallery-row{display:grid;grid-template-columns:76px minmax(0,1fr);gap:12px;align-items:stretch}
+.detail-thumbnails{display:flex;flex-direction:column;gap:9px;max-height:650px;overflow-y:auto;overflow-x:hidden;padding:0;margin:0}
+.detail-thumbnails button{flex:0 0 76px;width:76px;height:76px;padding:0;border:1px solid #ffffff38;background:#071943;overflow:hidden;cursor:pointer}
+.detail-thumbnails button.active{border:2px solid #f0e912}
+.detail-image-stage{position:relative;min-width:0;min-height:500px;height:min(54vw,650px);background:#f1f0ed;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.detail-main-image{width:100%;height:100%;min-height:0;object-fit:contain;background:#f1f0ed}
+.detail-image-count{position:absolute;right:14px;bottom:14px;padding:7px 10px;background:#00144bd9;color:white;font-size:10px}
+.detail-prev,.detail-next,.detail-heart{position:absolute;display:grid;place-items:center;border:0;border-radius:50%;background:#fff;color:#00144b;box-shadow:0 3px 18px #0002;cursor:pointer}
+.detail-prev,.detail-next{top:50%;transform:translateY(-50%);width:42px;height:42px;font-size:28px}
+.detail-prev{left:14px}.detail-next{right:14px}
+.detail-heart{right:15px;top:15px;width:42px;height:42px;font-size:23px}
+.detail-copy{position:sticky;top:18px;background:transparent;border:0;padding:0}
+.detail-copy h1{font-family:Georgia,serif;font-size:clamp(27px,2.4vw,36px);font-weight:500;line-height:1.12;letter-spacing:-.02em;margin:4px 0 14px;color:#fff}
+.detail-price{font-size:25px;color:#f0e912;font-weight:700;margin:10px 0}
+.detail-lead{font-size:12px;line-height:1.75;color:#d5def3}
+.detail-assurances{display:grid;gap:9px;padding:15px 0;margin:15px 0;border-block:1px solid #ffffff24;font-size:10px;color:#e2e8f7}
+.detail-assurances span:before{content:"✓";color:#f0e912;margin-right:9px}
+.product-order-form{display:grid;gap:9px;margin-top:20px}
+.product-order-form h2,.payment-panel h2,.delivery-panel h2{font-size:17px;margin:0 0 7px;color:#fff}
+.product-order-form label{font-size:11px;color:#e0e6f5;margin-top:7px}
+.product-order-form select,.product-order-form input,.product-order-form textarea{width:100%;border:1px solid #9aa5bf;background:#fff;color:#00144b;padding:12px 13px;font:inherit;font-size:12px;border-radius:5px;min-height:46px}
+.product-order-form textarea{resize:vertical;line-height:1.6}
+.detail-actions{display:grid;gap:10px;margin-top:17px}
+.detail-actions .button{width:100%;min-height:48px;display:flex;justify-content:center;align-items:center;text-align:center;border:1px solid #f0e912;cursor:pointer;font:inherit;font-size:12px;font-weight:700;text-decoration:none}
+.detail-actions .button-outline{background:transparent;color:#fff;border-color:#ffffff66}
+.detail-order-note,.gallery-note{font-size:10px;line-height:1.7;color:#aebbdc}
+.payment-panel,.delivery-panel{padding:18px 0;border-top:1px solid #ffffff25;margin-top:20px}
+.payment-panel p,.delivery-panel p{font-size:11px;line-height:1.8;color:#c2cce5}
+.payment-methods{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.payment-methods span{border:1px solid #f0e91288;padding:8px 12px;color:#f0e912;font-size:10px}
+.detail-description-panel{margin-top:34px;padding:26px;background:#071943;border:1px solid #ffffff1e;border-radius:6px}
+.detail-description-panel h2{font-size:23px;margin:7px 0 14px}
+.detail-description-panel h3{font-size:14px;margin:23px 0 8px;color:#f0e912}
+.detail-description-panel p:not(.eyebrow){font-size:12px;line-height:1.9;color:#d0d9ef}
+@media(max-width:900px){.detail-layout{grid-template-columns:minmax(0,1fr) minmax(290px,.9fr);gap:22px}.detail-gallery-row{grid-template-columns:62px minmax(0,1fr)}.detail-thumbnails button{flex-basis:62px;width:62px;height:62px}.detail-image-stage{min-height:400px}}
+@media(max-width:700px){.detail-layout{grid-template-columns:1fr}.detail-copy{position:static}.detail-gallery-row{grid-template-columns:1fr;gap:10px}.detail-thumbnails{order:2;flex-direction:row;max-height:none;overflow-x:auto;overflow-y:hidden}.detail-thumbnails button{flex:0 0 72px;width:72px;height:72px}.detail-image-stage{height:84vw;min-height:300px;max-height:560px}.detail-copy h1{font-size:30px}.detail-description-panel{padding:20px 16px}}
