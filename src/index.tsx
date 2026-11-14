@@ -23,20 +23,14 @@ app.get('/', (c) => c.html(`<!doctype html>
     <a class="brand" href="/" aria-label="Ubuntu Shop, accueil">
       <img src="/assets/brand/ubuntu-symbol-blue.png" alt="UBUNTU" class="brand-logo-white" />
     </a>
-    <nav class="main-nav" aria-label="Navigation principale">
-      <a href="#oeuvres" data-fr="Œuvres" data-en="Artworks">Œuvres</a>
-      <a href="#collections" data-fr="Collections" data-en="Collections">Collections</a>
-      <a href="#sur-mesure" data-fr="Sur mesure" data-en="Custom">Sur mesure</a>
-      <a href="#contact" data-fr="Contact" data-en="Contact">Contact</a>
-    </nav>
-    <div class="header-actions">
-      <label class="sr-only" for="language">Langue</label>
-      <select id="language" aria-label="Choisir la langue"><option value="fr">FR</option><option value="en">EN</option></select>
-      <a class="cart-link" href="#oeuvres" aria-label="Découvrir la boutique"><svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a>
-    </div>
+    <div class="header-search"><label class="sr-only" for="shop-search">Rechercher dans la boutique</label><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg><input id="shop-search" type="search" placeholder="Cherchez une création, un cadeau, une impression…" autocomplete="off"><div id="search-suggestions" class="search-suggestions" hidden></div></div>
+    <div class="header-actions"><button class="header-action" id="favorites-open" type="button" aria-label="Mes favoris"><span class="action-icon">♡</span><span>Favoris <b id="favorite-count">0</b></span></button><button class="header-action" id="cart-open" type="button" aria-label="Mon panier"><span class="action-icon">▢</span><span>Panier <b id="cart-count">0</b></span></button><label class="sr-only" for="language">Langue</label><select id="language" aria-label="Choisir la langue"><option value="fr">FR</option><option value="en">EN</option></select></div>
   </header>
 
   <main>
+    <nav class="category-nav" aria-label="Catégories de la boutique"><a href="#oeuvres" data-category="all" class="active">Tout voir</a><a href="#oeuvres" data-category="bois">Art & bois</a><a href="#oeuvres" data-category="cadeaux">Cadeaux personnalisés</a><a href="#oeuvres" data-category="papeterie">Papeterie & invitations</a><a href="#oeuvres" data-category="impression">Impression</a><a href="#sur-mesure">Sur mesure</a></nav>
+    <aside class="shop-drawer" id="shop-drawer" aria-live="polite" aria-label="Panneau boutique" hidden><div class="drawer-head"><h2 id="drawer-title">Votre sélection</h2><button id="drawer-close" type="button" aria-label="Fermer">×</button></div><div id="drawer-content"></div></aside><div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+    <section class="featured-strip section-wrap"><div><p class="eyebrow">À DÉCOUVRIR</p><h2>Des idées choisies pour vous</h2><p>Des créations à offrir, à afficher ou à utiliser au quotidien.</p></div><a href="#oeuvres" class="text-link">Explorer la boutique ↗</a></section>
     <section class="hero">
       <div class="hero-copy">
         <p class="eyebrow" data-fr="L’ART PREND FORME À GOMA" data-en="ART TAKES SHAPE IN GOMA">L’ART PREND FORME À GOMA</p>
@@ -101,6 +95,40 @@ app.get('/', (c) => c.html(`<!doctype html>
       document.title = p[1] + ' — UBUNTU SHOP';
     };
     renderProductPage();
+    const searchInput=document.getElementById('shop-search'), suggestions=document.getElementById('search-suggestions');
+    const drawer=document.getElementById('shop-drawer'), drawerContent=document.getElementById('drawer-content');
+    const read=(k)=>{try{return JSON.parse(localStorage.getItem(k)||'[]')}catch{return []}};
+    const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+    let favorites=read('ubuntu-shop-favorites'), cart=read('ubuntu-shop-cart');
+    const titleOf=id=>products.find(p=>p[0]===id)?.[1]||id;
+    const refresh=()=>{document.getElementById('favorite-count').textContent=favorites.length;document.getElementById('cart-count').textContent=cart.reduce((n,x)=>n+x.qty,0)};
+    const openDrawer=kind=>{
+      document.getElementById('drawer-title').textContent=kind==='favorites'?'Mes favoris':'Mon panier';
+      const rows=kind==='favorites'?favorites.map(id=>({id,qty:1})):cart;
+      drawerContent.innerHTML=rows.length?rows.map(x=>'<div class="drawer-item"><strong>'+titleOf(x.id)+'</strong><small>'+(kind==='cart'?'Quantité : '+x.qty:'Enregistré dans vos favoris')+'</small><div><button data-remove="'+x.id+'" data-kind="'+kind+'">Retirer</button>'+(kind==='favorites'?'<button data-add="'+x.id+'">Ajouter au panier</button>':'')+'</div></div>').join(''):'<p class="drawer-empty">Votre sélection est encore vide. Parcourez les créations pour commencer.</p>';
+      if(kind==='cart'&&cart.length)drawerContent.insertAdjacentHTML('beforeend','<p class="drawer-note">Prix et disponibilité confirmés par notre équipe. Aucun paiement n’est prélevé sur ce site.</p><a class="button button-yellow drawer-contact" target="_blank" rel="noopener" href="https://wa.me/243999214448?text='+encodeURIComponent('Bonjour UBUNTU SHOP, je souhaite un devis : '+cart.map(x=>titleOf(x.id)+' x'+x.qty).join(', '))+'">Demander un devis sur WhatsApp</a>');
+      drawer.hidden=false;document.getElementById('drawer-backdrop').hidden=false;
+    };
+    const closeDrawer=()=>{drawer.hidden=true;document.getElementById('drawer-backdrop').hidden=true};
+    const cards=[...document.querySelectorAll('#product-grid .product-card')];
+    const updateCards=()=>cards.forEach(card=>{
+      const link=card.querySelector('.product-card-link');if(!link)return;
+      const id=link.getAttribute('href').split('/').pop();
+      card.dataset.search=(card.innerText||'').toLocaleLowerCase('fr');
+      let btn=card.querySelector('.favorite-toggle');
+      if(!btn){btn=document.createElement('button');btn.type='button';btn.className='favorite-toggle';card.querySelector('.product-image')?.append(btn)}
+      const active=favorites.includes(id);btn.textContent=active?'♥':'♡';btn.setAttribute('aria-pressed',String(active));btn.setAttribute('aria-label',active?'Retirer des favoris':'Ajouter aux favoris');btn.classList.toggle('is-active',active);
+    });
+    const filter=()=>{const q=(searchInput?.value||'').trim().toLocaleLowerCase('fr'),cat=document.querySelector('.category-nav a.active')?.dataset.category||'all';cards.forEach(card=>{const t=card.dataset.search||'',ok=cat==='all'||(cat==='bois'&&/bois|gravure|sculpt|porte-nom/i.test(t))||(cat==='cadeaux'&&/personnalis|cadeau|souvenir|porte-nom/i.test(t))||(cat==='papeterie'&&/invitation|faire-part|carte/i.test(t))||(cat==='impression'&&/impression|calendrier|papier/i.test(t));card.hidden=!(ok&&t.includes(q))})};
+    updateCards();refresh();
+    searchInput?.addEventListener('input',()=>{filter();const q=searchInput.value.trim().toLocaleLowerCase('fr');suggestions.hidden=!q;suggestions.innerHTML=q?cards.filter(c=>(c.dataset.search||'').includes(q)).slice(0,4).map(c=>'<button type="button" data-go="'+c.querySelector('.product-card-link').getAttribute('href')+'">'+c.querySelector('h3').textContent+'</button>').join(''):''});
+    suggestions?.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b)location.href=b.dataset.go});
+    document.querySelectorAll('.category-nav [data-category]').forEach(a=>a.addEventListener('click',()=>{document.querySelectorAll('.category-nav [data-category]').forEach(x=>x.classList.remove('active'));a.classList.add('active');filter()}));
+    document.getElementById('product-grid')?.addEventListener('click',e=>{const b=e.target.closest('.favorite-toggle');if(!b)return;e.preventDefault();const id=b.closest('.product-card').querySelector('.product-card-link').getAttribute('href').split('/').pop();favorites=favorites.includes(id)?favorites.filter(x=>x!==id):[...favorites,id];save('ubuntu-shop-favorites',favorites);updateCards();refresh()});
+    document.getElementById('favorites-open').addEventListener('click',()=>openDrawer('favorites'));document.getElementById('cart-open').addEventListener('click',()=>openDrawer('cart'));
+    document.getElementById('drawer-close').addEventListener('click',closeDrawer);document.getElementById('drawer-backdrop').addEventListener('click',closeDrawer);
+    drawerContent.addEventListener('click',e=>{const r=e.target.closest('[data-remove]'),a=e.target.closest('[data-add]');if(r){if(r.dataset.kind==='favorites')favorites=favorites.filter(x=>x!==r.dataset.remove);else cart=cart.filter(x=>x.id!==r.dataset.remove);save(r.dataset.kind==='favorites'?'ubuntu-shop-favorites':'ubuntu-shop-cart',r.dataset.kind==='favorites'?favorites:cart);refresh();openDrawer(r.dataset.kind)}if(a){const f=cart.find(x=>x.id===a.dataset.add);if(f)f.qty++;else cart.push({id:a.dataset.add,qty:1});save('ubuntu-shop-cart',cart);refresh();openDrawer('favorites')}});
+    if(location.pathname.startsWith('/produit/')){const slug=location.pathname.split('/')[2],box=document.querySelector('.detail-actions');if(box){const b=document.createElement('button');b.type='button';b.className='button button-yellow';b.textContent='Ajouter à mon panier';b.addEventListener('click',()=>{const f=cart.find(x=>x.id===slug);if(f)f.qty++;else cart.push({id:slug,qty:1});save('ubuntu-shop-cart',cart);refresh();openDrawer('cart')});box.prepend(b)}}
     const language = document.getElementById('language');
     language.addEventListener('change', () => {
       const lang = language.value;
