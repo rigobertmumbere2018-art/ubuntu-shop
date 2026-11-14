@@ -1,7 +1,8 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { registerAdminRoutes } from './admin';
 
-type Bindings = { DB: D1Database };
+type Bindings = { DB: D1Database; ADMIN_BOOTSTRAP_KEY?: string };
 const app = new Hono<{ Bindings: Bindings }>();
 
 app.use('/api/*', cors());
@@ -191,5 +192,7 @@ app.get('/api/products', async (c) => {
   const result = await c.env.DB.prepare("SELECT * FROM products WHERE status = 'published' ORDER BY created_at DESC").all();
   return c.json(result.results);
 });
+
+registerAdminRoutes(app);
 
 export default app;
