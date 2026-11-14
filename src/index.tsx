@@ -38,6 +38,7 @@ app.get('/', (c) => c.html(`<!doctype html>
         <div class="hero-actions"><a class="button button-yellow" href="#oeuvres" data-fr="Découvrir les œuvres" data-en="Discover the artworks">Découvrir les œuvres <span aria-hidden="true"><svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></span></a><a class="hero-secondary" href="#sur-mesure" data-fr="Commander une création" data-en="Commission a creation">Commander une création</a></div>
         <div class="hero-meta"><span><small>GALERIE & BOUTIQUE</small><strong>Goma · RDC</strong></span><span><small>CRÉATIONS</small><strong>Art · Personnalisation · Print</strong></span></div>
       </div>
+      <div class="hero-emblem" aria-hidden="true"><img src="/assets/brand/ubuntu-symbol-blue.png" alt="" /></div>
       <div class="hero-bottom-pattern" aria-hidden="true"><img src="/assets/brand/hexagons-tricolor.png" alt="" /></div>
     </section>
 
