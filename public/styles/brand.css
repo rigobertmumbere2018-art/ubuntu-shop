@@ -444,3 +444,46 @@ html{scroll-behavior:smooth}
 @media(prefers-reduced-motion:reduce){
   .hero-emblem img{animation:none}
 }
+
+
+/* Emblème seul dans l'espace libre du hero : blanc, animé et légèrement ombré */
+.hero{
+  display:block!important;
+  position:relative!important;
+  overflow:hidden!important;
+  isolation:isolate!important;
+}
+.hero-copy{
+  width:min(68%,920px)!important;
+  max-width:920px!important;
+  z-index:2!important;
+}
+.hero h1{max-width:900px!important}
+.hero-description{max-width:760px!important}
+.hero-emblem{
+  top:50%!important;
+  right:clamp(34px,8vw,150px)!important;
+  width:clamp(260px,27vw,430px)!important;
+  opacity:.88!important;
+  z-index:1!important;
+  transform:translateY(-50%)!important;
+}
+.hero-emblem img{
+  filter:brightness(0) invert(1) drop-shadow(0 9px 20px rgba(255,255,255,.16))!important;
+  animation:ubuntu-emblem-float 9s ease-in-out infinite!important;
+}
+@keyframes ubuntu-emblem-float{
+  0%,100%{transform:translate3d(0,0,0) scale(1)}
+  50%{transform:translate3d(0,-7px,0) scale(1.018)}
+}
+@media(max-width:900px){
+  .hero-copy{width:74%!important}
+  .hero-emblem{right:2vw!important;width:clamp(190px,29vw,280px)!important;opacity:.32!important}
+}
+@media(max-width:700px){
+  .hero-copy{width:100%!important;max-width:100%!important}
+  .hero-emblem{right:0!important;width:clamp(145px,42vw,220px)!important;opacity:.15!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .hero-emblem img{animation:none!important}
+}
