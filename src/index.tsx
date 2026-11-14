@@ -155,6 +155,24 @@ app.get('/', (c) => c.html(`<!doctype html>
       document.documentElement.lang = lang;
       document.querySelectorAll('[data-' + lang + ']').forEach(el => { el.textContent = el.getAttribute('data-' + lang); });
     });
+    // Animations discrètes : apparition progressive et respect des préférences d’accessibilité.
+    if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.documentElement.classList.add('motion-ready');
+      const revealTargets = document.querySelectorAll('.hero-copy, .hero-art, .featured-strip, .section-heading, .product-card, .collection-card, .print-copy, .print-visual, .custom-inner, .steps-grid > div, .contact-section > * , .detail-gallery, .detail-copy, .detail-description-panel, .related-products');
+      const revealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -35px 0px' });
+      revealTargets.forEach((el, index) => {
+        el.style.setProperty('--reveal-delay', Math.min(index % 4, 3) * 75 + 'ms');
+        el.classList.add('reveal-on-scroll');
+        revealObserver.observe(el);
+      });
+    }
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
 </body></html>`));
