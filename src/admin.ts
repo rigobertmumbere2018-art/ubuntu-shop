@@ -87,8 +87,23 @@ export function registerAdminRoutes(app: Hono<AdminEnv>) {
     const email = String(body.email || '').trim().toLowerCase();
     const password = String(body.password || '');
     if (!validEmail(email) || !password || password.length > 128) return jsonError(c, 'Adresse e-mail ou mot de passe incorrect.', 401);
+    const ip = c.req.header('CF-Connecting-IP') || 'unknown';
+    const attemptKey = await sha256(email + '|' + ip);
+    const now = Date.now();
+    const attempt = await c.env.DB.prepare('SELECT failure_count,window_started_at,blocked_until FROM admin_login_attempts WHERE attempt_key=?').bind(attemptKey).first() as {failure_count:number;window_started_at:string;blocked_until:string|null} | null;
+    if (attempt?.blocked_until && Date.parse(attempt.blocked_until) > now) return jsonError(c, 'Trop de tentatives. Réessayez dans 15 minutes.', 429);
     const user = await c.env.DB.prepare('SELECT u.id,u.name,u.email,u.password_hash,u.is_active,r.name AS role FROM users u JOIN roles r ON r.id=u.role_id WHERE lower(u.email)=? LIMIT 1').bind(email).first<{id:string;name:string;email:string;password_hash:string;is_active:number;role:AdminRole}>();
-    if (!user || user.is_active !== 1 || !await verifyPassword(password, user.password_hash)) return jsonError(c, 'Adresse e-mail ou mot de passe incorrect.', 401);
+    const passwordOk = user ? await verifyPassword(password, user.password_hash) : false;
+    if (!user || user.is_active !== 1 || !passwordOk) {
+      const sameWindow = attempt && now - Date.parse(attempt.window_started_at) < 15 * 60 * 1000;
+      const failures = sameWindow ? attempt.failure_count + 1 : 1;
+      const windowStarted = sameWindow ? attempt.window_started_at : new Date(now).toISOString();
+      const blockedUntil = failures >= 8 ? new Date(now + 15 * 60 * 1000).toISOString() : null;
+      await c.env.DB.prepare('INSERT INTO admin_login_attempts (attempt_key,failure_count,window_started_at,blocked_until) VALUES (?,?,?,?) ON CONFLICT(attempt_key) DO UPDATE SET failure_count=excluded.failure_count,window_started_at=excluded.window_started_at,blocked_until=excluded.blocked_until')
+        .bind(attemptKey, failures, windowStarted, blockedUntil).run();
+      return jsonError(c, blockedUntil ? 'Trop de tentatives. Réessayez dans 15 minutes.' : 'Adresse e-mail ou mot de passe incorrect.', blockedUntil ? 429 : 401);
+    }
+    await c.env.DB.prepare('DELETE FROM admin_login_attempts WHERE attempt_key=?').bind(attemptKey).run();
     const sessionToken = randomToken();
     const csrfToken = randomToken(24);
     const expires = new Date(Date.now() + SESSION_HOURS * 60 * 60 * 1000).toISOString();
