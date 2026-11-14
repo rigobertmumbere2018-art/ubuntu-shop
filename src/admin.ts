@@ -185,6 +185,41 @@ export function registerAdminRoutes(app: Hono<AdminEnv>) {
     return c.json({ ok: true, message: 'Compte administrateur créé.' }, 201);
   });
 
+  app.get('/api/admin/signup-requests', async (c) => {
+    const session=await authenticate(c);
+    if(!session) return jsonError(c,'Connexion requise.',401);
+    if(session.role!=='super_admin') return jsonError(c,'Réservé au super administrateur.',403);
+    const result=await c.env.DB.prepare("SELECT id,name,email,created_at FROM admin_signup_requests WHERE status='pending' ORDER BY created_at ASC").all();
+    return c.json({ok:true,requests:result.results});
+  });
+
+  app.post('/api/admin/signup-requests/:id/approve', async (c) => {
+    const session=await authenticate(c);
+    if(!session) return jsonError(c,'Connexion requise.',401);
+    if(session.role!=='super_admin') return jsonError(c,'Réservé au super administrateur.',403);
+    if(!await requireCsrf(c,session)) return jsonError(c,'Vérification de sécurité échouée.',403);
+    const id=c.req.param('id');
+    const request=await c.env.DB.prepare("SELECT id,name,email,password_hash FROM admin_signup_requests WHERE id=? AND status='pending'").bind(id).first<{id:string;name:string;email:string;password_hash:string}>();
+    if(!request) return jsonError(c,'Cette demande n’est plus disponible.',404);
+    const existing=await c.env.DB.prepare('SELECT id FROM users WHERE lower(email)=?').bind(request.email).first();
+    if(existing) return jsonError(c,'Cette adresse e-mail appartient déjà à un compte.',409);
+    await c.env.DB.batch([
+      c.env.DB.prepare("INSERT INTO users (id,name,email,password_hash,role_id,is_active) VALUES (?,?,?,?, 'role-admin',1)").bind(crypto.randomUUID(),request.name,request.email,request.password_hash),
+      c.env.DB.prepare("UPDATE admin_signup_requests SET status='approved',reviewed_by=?,reviewed_at=CURRENT_TIMESTAMP,password_hash='' WHERE id=? AND status='pending'").bind(session.user_id,id)
+    ]);
+    return c.json({ok:true,message:'Demande approuvée. Le compte administrateur est actif.'});
+  });
+
+  app.post('/api/admin/signup-requests/:id/reject', async (c) => {
+    const session=await authenticate(c);
+    if(!session) return jsonError(c,'Connexion requise.',401);
+    if(session.role!=='super_admin') return jsonError(c,'Réservé au super administrateur.',403);
+    if(!await requireCsrf(c,session)) return jsonError(c,'Vérification de sécurité échouée.',403);
+    const result=await c.env.DB.prepare("UPDATE admin_signup_requests SET status='rejected',reviewed_by=?,reviewed_at=CURRENT_TIMESTAMP,password_hash='' WHERE id=? AND status='pending'").bind(session.user_id,c.req.param('id')).run();
+    if(!result.meta.changes) return jsonError(c,'Cette demande n’est plus disponible.',404);
+    return c.json({ok:true,message:'Demande refusée.'});
+  });
+
   app.post('/api/admin/users/:id/disable', async (c) => {
     const session = await authenticate(c);
     if (!session) return jsonError(c, 'Connexion requise.', 401);
