@@ -368,3 +368,8 @@ html{scroll-behavior:smooth}
 .site-header .brand{min-width:0!important;gap:0!important;text-decoration:none;white-space:nowrap}
 .site-header .brand-name{display:block!important;color:#F0E912;font-family:'Century Gothic',Arial,sans-serif;font-size:clamp(15px,1.45vw,21px);font-weight:700;letter-spacing:.075em;line-height:1.15}
 @media(max-width:560px){.site-header .brand-name{font-size:14px;letter-spacing:.035em}}
+
+
+/* Hero sans photographie : le texte occupe toute la largeur */
+.hero{grid-template-columns:minmax(0,1fr)!important;}
+.hero-copy{max-width:760px!important;}
