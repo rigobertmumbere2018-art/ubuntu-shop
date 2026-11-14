@@ -87,6 +87,16 @@ export function registerAdminRoutes(app: Hono<AdminEnv>) {
     }
   });
 
+  app.post('/api/admin/signup-requests', async (c) => {
+    const body = await c.req.json<{name?:string;email?:string;password?:string}>().catch(() => ({} as {name?:string;email?:string;password?:string}));
+    const name=String(body.name||'').trim(), email=String(body.email||'').trim().toLowerCase(), password=String(body.password||'');
+    if(name.length<2||name.length>100||!validEmail(email)||password.length<12||password.length>128) return jsonError(c,'Vérifiez le nom, l’adresse e-mail et le mot de passe (12 caractères minimum).');
+    const existing=await c.env.DB.prepare("SELECT id FROM users WHERE lower(email)=? UNION ALL SELECT id FROM admin_signup_requests WHERE lower(email)=? AND status='pending' LIMIT 1").bind(email,email).first();
+    if(existing) return jsonError(c,'Cette adresse e-mail est déjà utilisée ou fait déjà l’objet d’une demande.',409);
+    await c.env.DB.prepare("INSERT INTO admin_signup_requests (id,name,email,password_hash,status) VALUES (?,?,?,?,'pending')").bind(crypto.randomUUID(),name,email,await passwordHash(password)).run();
+    return c.json({ok:true,message:'Votre demande a été envoyée. Vous pourrez vous connecter après validation du super administrateur.'},201);
+  });
+
   app.post('/api/admin/login', async (c) => {
     const body = await c.req.json<{ email?: string; password?: string }>().catch(() => ({} as { email?: string; password?: string }));
     const email = String(body.email || '').trim().toLowerCase();
