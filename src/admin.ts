@@ -325,7 +325,7 @@ export function registerAdminRoutes(app: Hono<AdminEnv>) {
       const ext=({'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/avif':'avif'} as Record<string,string>)[file.type];
       const key=productId+'/'+crypto.randomUUID()+'.'+ext;
       await c.env.PRODUCT_IMAGES.put(key,file.stream(),{httpMetadata:{contentType:file.type,cacheControl:'public, max-age=31536000, immutable'}});
-      const mediaId=crypto.randomUUID(),sort=Number(existing?.total||0)+added.length;
+      const mediaId=crypto.randomUUID();const sort:number=Number(existing?.total||0)+added.length;
       await c.env.DB.prepare('INSERT INTO product_media (id,product_id,object_key,alt_fr,alt_en,sort_order,is_cover) VALUES (?,?,?,?,?,?,?)')
         .bind(mediaId,productId,key,String(form.get('alt_fr')||'Image du produit'),String(form.get('alt_en')||'Product image'),sort,sort===0?1:0).run();
       added.push({id:mediaId,url:'/media/products/'+encodeURIComponent(key),is_cover:sort===0});
