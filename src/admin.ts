@@ -231,6 +231,74 @@ export function registerAdminRoutes(app: Hono<AdminEnv>) {
     return c.json({ ok: true });
   });
 
+
+  // Outils opérationnels communs aux deux rôles administrateur.
+  const operationalSession = async (c:any) => {
+    const session=await authenticate(c);
+    if(!session) return null;
+    if(!await requireCsrf(c,session) && c.req.method!=='GET') return null;
+    return session;
+  };
+  app.get('/api/admin/overview', async c => {
+    const session=await authenticate(c); if(!session)return jsonError(c,'Connexion requise.',401);
+    const queries = await Promise.all([
+      c.env.DB.prepare("SELECT COUNT(*) total FROM products").first(),
+      c.env.DB.prepare("SELECT COUNT(*) total FROM orders").first(),
+      c.env.DB.prepare("SELECT COUNT(*) total FROM orders WHERE payment_status IN ('unpaid','partial','pending')").first(),
+      c.env.DB.prepare("SELECT COUNT(*) total FROM payment_proofs WHERE status='pending'").first(),
+      c.env.DB.prepare("SELECT COUNT(*) total FROM customers").first()
+    ]);
+    return c.json({ok:true,stats:{products:(queries[0] as any)?.total||0,orders:(queries[1] as any)?.total||0,paymentsPending:(queries[2] as any)?.total||0,proofsPending:(queries[3] as any)?.total||0,customers:(queries[4] as any)?.total||0}});
+  });
+  app.get('/api/admin/products', async c => {
+    const session=await authenticate(c);if(!session)return jsonError(c,'Connexion requise.',401);
+    const r=await c.env.DB.prepare("SELECT p.id,p.reference,p.description_fr,p.description_en,p.price_min_usd,p.price_max_usd,p.status,p.stock,p.availability,c.name_fr category FROM products p LEFT JOIN categories c ON c.id=p.category_id ORDER BY p.created_at DESC").all();
+    return c.json({ok:true,products:r.results});
+  });
+  app.get('/api/admin/orders', async c => {
+    const session=await authenticate(c);if(!session)return jsonError(c,'Connexion requise.',401);
+    const r=await c.env.DB.prepare("SELECT o.id,o.reference,o.total_usd,o.deposit_required_usd,o.deposit_paid_usd,o.balance_due_usd,o.payment_status,o.production_status,o.delivery_mode,o.created_at,c.name customer_name,c.phone FROM orders o JOIN customers c ON c.id=o.customer_id ORDER BY o.created_at DESC LIMIT 200").all();
+    return c.json({ok:true,orders:r.results});
+  });
+  app.get('/api/admin/payments', async c => {
+    const session=await authenticate(c);if(!session)return jsonError(c,'Connexion requise.',401);
+    const r=await c.env.DB.prepare("SELECT p.id,p.order_id,p.amount_usd,p.currency,p.payment_method,p.status,p.created_at,o.reference,c.name customer_name FROM payments p JOIN orders o ON o.id=p.order_id JOIN customers c ON c.id=o.customer_id ORDER BY p.created_at DESC LIMIT 200").all();
+    return c.json({ok:true,payments:r.results});
+  });
+  app.post('/api/admin/orders/:id/production', async c => {
+    const session=await operationalSession(c);if(!session)return jsonError(c,'Session ou vérification de sécurité invalide.',403);
+    const body=await c.req.json<{status?:string}>().catch(()=>({}));
+    if(!['pending','in_production','ready','delivered','cancelled'].includes(String(body.status)))return jsonError(c,'Statut de production invalide.');
+    const order=await c.env.DB.prepare('SELECT payment_status,deposit_required_usd,deposit_paid_usd FROM orders WHERE id=?').bind(c.req.param('id')).first<any>();
+    if(!order)return jsonError(c,'Commande introuvable.',404);
+    if(body.status==='in_production' && Number(order.deposit_paid_usd)<Number(order.deposit_required_usd))return jsonError(c,'Production interdite : acompte requis non confirmé.');
+    await c.env.DB.prepare('UPDATE orders SET production_status=? WHERE id=?').bind(body.status,c.req.param('id')).run();
+    await c.env.DB.prepare("INSERT INTO order_events(id,order_id,actor_user_id,event_type,details_json) VALUES(?,?,?,'production_status',?)").bind(crypto.randomUUID(),c.req.param('id'),session.user_id,JSON.stringify({status:body.status})).run();
+    return c.json({ok:true});
+  });
+  app.post('/api/admin/payments/:id/verify', async c => {
+    const session=await operationalSession(c);if(!session)return jsonError(c,'Session ou vérification de sécurité invalide.',403);
+    const body=await c.req.json<{status?:string}>().catch(()=>({}));
+    if(!['approved','rejected'].includes(String(body.status)))return jsonError(c,'Décision invalide.');
+    const payment=await c.env.DB.prepare('SELECT id,order_id,amount_usd,status FROM payments WHERE id=?').bind(c.req.param('id')).first<any>();
+    if(!payment)return jsonError(c,'Paiement introuvable.',404);
+    if(payment.status==='approved')return jsonError(c,'Ce paiement est déjà validé.',409);
+    await c.env.DB.prepare('UPDATE payments SET status=?,verified_by=?,verified_at=CURRENT_TIMESTAMP WHERE id=?').bind(body.status,session.user_id,payment.id).run();
+    if(body.status==='approved'){
+      await c.env.DB.prepare("UPDATE orders SET deposit_paid_usd=deposit_paid_usd+?,balance_due_usd=MAX(0,balance_due_usd-?),payment_status=CASE WHEN balance_due_usd-?<=0 THEN 'paid' ELSE 'partial' END WHERE id=?").bind(payment.amount_usd,payment.amount_usd,payment.amount_usd,payment.order_id).run();
+      await c.env.DB.prepare("INSERT OR IGNORE INTO receipts(id,receipt_number,payment_id) VALUES(?,?,?)").bind(crypto.randomUUID(),'REC-'+Date.now(),payment.id).run();
+    }
+    return c.json({ok:true,message:body.status==='approved'?'Paiement validé.':'Paiement refusé.'});
+  });
+  app.post('/api/admin/products/:id/status', async c => {
+    const session=await operationalSession(c);if(!session)return jsonError(c,'Session ou vérification de sécurité invalide.',403);
+    const body=await c.req.json<{status?:string}>().catch(()=>({}));
+    if(!['draft','published','archived'].includes(String(body.status)))return jsonError(c,'Statut invalide.');
+    const result=await c.env.DB.prepare('UPDATE products SET status=?,updated_at=CURRENT_TIMESTAMP WHERE id=?').bind(body.status,c.req.param('id')).run();
+    if(!result.meta.changes)return jsonError(c,'Produit introuvable.',404);
+    return c.json({ok:true});
+  });
+
   app.get('/admin', (c) => c.html(adminPage));
 }
 
@@ -240,7 +308,7 @@ const adminPage = `<!doctype html>
 </style></head><body><main class="admin-shell"><div class="admin-wrap"><header class="admin-top"><a href="/" class="admin-brand">UBUNTU <b>SHOP</b> <span style="color:#bfc9e3">/ ADMIN</span></a><a href="/" style="font-size:11px;color:#f0e912">← Voir la boutique</a></header>
 <section id="auth-view" class="admin-card"><p style="color:#9b8e00;font-size:10px;letter-spacing:.18em;font-weight:bold">ESPACE SÉCURISÉ</p><h1 id="auth-title">Connexion administrateur</h1><p id="auth-description" class="admin-muted">Accédez à votre espace de gestion UBUNTU SHOP.</p><form id="auth-form" class="admin-form"><div id="setup-name" class="admin-hidden"><label>Nom complet<input name="name" autocomplete="name"></label></div><label>Adresse e-mail<input name="email" type="email" autocomplete="username" required></label><label>Mot de passe<input name="password" type="password" autocomplete="current-password" minlength="12" required></label><div id="setup-key" class="admin-hidden"><label>Clé d’initialisation<input name="bootstrapKey" type="password" autocomplete="off"></label></div><button class="admin-submit" id="auth-submit">Se connecter</button></form><p id="auth-message" class="admin-message" role="status"></p><button type="button" id="show-signup" class="admin-secondary">Créer un compte administrateur</button></section>
 <section id="signup-view" class="admin-card admin-hidden"><p style="color:#9b8e00;font-size:10px;letter-spacing:.18em;font-weight:bold">DEMANDE D’ACCÈS</p><h1>Créer un compte administrateur</h1><p class="admin-muted">Votre demande sera examinée par le super administrateur. L’accès sera activé uniquement après son approbation.</p><form id="signup-form" class="admin-form"><label>Nom complet<input name="name" autocomplete="name" required minlength="2" maxlength="100"></label><label>Adresse e-mail<input name="email" type="email" autocomplete="email" required></label><label>Mot de passe<input name="password" type="password" autocomplete="new-password" minlength="12" required></label><button class="admin-submit">Envoyer ma demande</button></form><p id="signup-message" class="admin-message" role="status"></p><button type="button" id="back-login" class="admin-secondary">Retour à la connexion</button></section>
-<section id="dashboard" class="admin-dashboard admin-hidden"><div style="color:#fff"><p style="color:#f0e912;font-size:10px;letter-spacing:.18em">TABLEAU DE BORD</p><h1 style="font:500 36px Georgia,serif;margin:0 0 8px">Bienvenue, <span id="admin-name"></span></h1><p id="admin-role" class="admin-muted" style="color:#c2cbe5"></p></div><div class="admin-panel"><h2>Votre session</h2><p class="admin-muted">Vous êtes connecté à l’espace privé d’UBUNTU SHOP. Les outils de gestion métier seront ajoutés à cet espace selon les modules activés.</p><div class="admin-actions"><button id="logout">Se déconnecter</button></div></div><div id="users-panel" class="admin-panel admin-hidden"><h2>Demandes de création de compte</h2><p class="admin-muted">Examinez les demandes reçues. Un compte ne devient actif qu’après votre approbation.</p><p id="requests-message" class="admin-message" role="status"></p><div id="requests-list"></div><h2 style="margin-top:30px">Comptes administrateurs</h2><div id="users-list"></div></div></section></div></main>
+<section id="dashboard" class="admin-dashboard admin-hidden"><div style="color:#fff"><p style="color:#f0e912;font-size:10px;letter-spacing:.18em">TABLEAU DE BORD</p><h1 style="font:500 36px Georgia,serif;margin:0 0 8px">Bienvenue, <span id="admin-name"></span></h1><p id="admin-role" class="admin-muted" style="color:#c2cbe5"></p></div><div class="admin-panel"><div class="admin-actions"><button data-section="overview">Vue générale</button><button data-section="products">Produits</button><button data-section="orders">Commandes</button><button data-section="payments">Paiements</button><button id="logout">Se déconnecter</button></div></div><div id="admin-workspace" class="admin-panel"><h2>Chargement de votre espace de travail…</h2></div><div id="users-panel" class="admin-panel admin-hidden"><h2>Demandes de création de compte</h2><p class="admin-muted">Examinez les demandes reçues. Un compte ne devient actif qu’après votre approbation.</p><p id="requests-message" class="admin-message" role="status"></p><div id="requests-list"></div><h2 style="margin-top:30px">Comptes administrateurs</h2><div id="users-list"></div></div></section></div></main>
 <script>
 let csrfToken='';let setupMode=false;let currentUser=null;
 const $=id=>document.getElementById(id);
@@ -251,11 +319,25 @@ function showLogin(setup){setupMode=setup;$('auth-view').classList.remove('admin
 async function loadUsers(){const data=await api('/api/admin/users');$('users-list').innerHTML=data.users.map(u=>'<div class="admin-user"><div><strong>'+escapeHtml(u.name)+'</strong><small>'+escapeHtml(u.email)+' · '+escapeHtml(u.role)+(u.is_active?' · Actif':' · Désactivé')+'</small></div>'+(u.is_active&&u.id!==currentUser.id?'<button class="danger" data-disable="'+u.id+'">Désactiver</button>':'')+'</div>').join('')||'<p class="admin-muted">Aucun compte supplémentaire.</p>'}
 async function loadRequests(){const data=await api('/api/admin/signup-requests');$('requests-list').innerHTML=data.requests.map(r=>'<div class="admin-user"><div><strong>'+escapeHtml(r.name)+'</strong><small>'+escapeHtml(r.email)+' · Demande du '+new Date(r.created_at).toLocaleString('fr-FR')+'</small></div><div class="admin-actions"><button data-approve="'+r.id+'">Approuver</button><button class="danger" data-reject="'+r.id+'">Refuser</button></div></div>').join('')||'<p class="admin-muted">Aucune demande en attente.</p>'}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-async function showDashboard(user){currentUser=user;$('auth-view').classList.add('admin-hidden');$('dashboard').classList.remove('admin-hidden');$('admin-name').textContent=user.name;$('admin-role').textContent=user.role==='super_admin'?'Super administrateur':'Administrateur';$('users-panel').classList.toggle('admin-hidden',user.role!=='super_admin');if(user.role==='super_admin'){await loadUsers();await loadRequests()}}
+async function showDashboard(user){currentUser=user;$('auth-view').classList.add('admin-hidden');$('dashboard').classList.remove('admin-hidden');$('admin-name').textContent=user.name;$('admin-role').textContent=user.role==='super_admin'?'Super administrateur':'Administrateur';$('users-panel').classList.toggle('admin-hidden',user.role!=='super_admin');if(user.role==='super_admin'){await loadUsers();await loadRequests()}await workspace('overview')}
 $('auth-form').addEventListener('submit',async e=>{e.preventDefault();const form=new FormData(e.currentTarget);const payload=Object.fromEntries(form.entries());try{if(setupMode){await api('/api/admin/bootstrap',{method:'POST',body:JSON.stringify(payload)});message('Compte créé. Vous pouvez maintenant vous connecter.',true);showLogin(false)}else{const data=await api('/api/admin/login',{method:'POST',body:JSON.stringify(payload)});csrfToken=decodeURIComponent(cookie('ubuntu_admin_csrf'));await showDashboard(data.user)}}catch(err){message(err.message)}});
 $('show-signup').addEventListener('click',()=>{$('auth-view').classList.add('admin-hidden');$('signup-view').classList.remove('admin-hidden');$('signup-message').textContent=''});
 $('back-login').addEventListener('click',()=>{$('signup-view').classList.add('admin-hidden');$('auth-view').classList.remove('admin-hidden')});
 $('signup-form').addEventListener('submit',async e=>{e.preventDefault();const payload=Object.fromEntries(new FormData(e.currentTarget).entries());try{const data=await api('/api/admin/signup-requests',{method:'POST',body:JSON.stringify(payload)});e.currentTarget.reset();message(data.message,true,'signup-message')}catch(err){message(err.message,false,'signup-message')}});
+
+async function workspace(section='overview'){
+ const root=$('admin-workspace');root.innerHTML='<p class="admin-muted">Chargement…</p>';
+ try{
+  if(section==='overview'){const d=await api('/api/admin/overview');root.innerHTML='<h2>Activité de la boutique</h2><div class="admin-actions">'+[['Produits',d.stats.products],['Commandes',d.stats.orders],['Paiements en attente',d.stats.paymentsPending],['Preuves à vérifier',d.stats.proofsPending],['Clients',d.stats.customers]].map(x=>'<div style="background:#f1f3f8;padding:18px;min-width:130px"><small>'+x[0]+'</small><h2>'+x[1]+'</h2></div>').join('')+'</div><p class="admin-muted">Utilisez les rubriques ci-dessus pour traiter les opérations de la boutique.</p>'}
+  if(section==='products'){const d=await api('/api/admin/products');root.innerHTML='<h2>Catalogue produits</h2><p class="admin-muted">Publiez ou archivez les fiches préparées dans le catalogue. La création et la modification détaillée seront intégrées dans le prochain écran produit.</p>'+d.products.map(p=>'<div class="admin-user"><div><strong>'+escapeHtml(p.description_fr)+'</strong><small>'+escapeHtml(p.category||'Sans catégorie')+' · '+escapeHtml(p.status)+' · '+Number(p.price_min_usd).toFixed(2)+' à '+Number(p.price_max_usd).toFixed(2)+' USD</small></div><div class="admin-actions">'+(p.status!=='published'?'<button data-product="'+p.id+'" data-status="published">Publier</button>':'<button data-product="'+p.id+'" data-status="draft">Dépublier</button>')+'<button class="danger" data-product="'+p.id+'" data-status="archived">Archiver</button></div></div>').join('')||'<p>Aucun produit enregistré.</p>'}
+  if(section==='orders'){const d=await api('/api/admin/orders');root.innerHTML='<h2>Suivi des commandes</h2>'+d.orders.map(o=>'<div class="admin-user"><div><strong>'+escapeHtml(o.reference)+' — '+escapeHtml(o.customer_name)+'</strong><small>'+escapeHtml(o.phone)+' · Total '+Number(o.total_usd).toFixed(2)+' USD · Acompte '+Number(o.deposit_paid_usd).toFixed(2)+' / '+Number(o.deposit_required_usd).toFixed(2)+' USD · Solde '+Number(o.balance_due_usd).toFixed(2)+' USD · Paiement : '+escapeHtml(o.payment_status)+'</small><small>Production : '+escapeHtml(o.production_status)+' · '+escapeHtml(o.delivery_mode)+'</small></div><select data-production="'+o.id+'"><option value="pending">En attente</option><option value="in_production">En production</option><option value="ready">Prête</option><option value="delivered">Livrée</option><option value="cancelled">Annulée</option></select></div>').join('')||'<p>Aucune commande enregistrée.</p>'}
+  if(section==='payments'){const d=await api('/api/admin/payments');root.innerHTML='<h2>Vérification des paiements</h2><p class="admin-muted">Validez uniquement les paiements dont la réception a été vérifiée. La validation met à jour le solde et génère un reçu.</p>'+d.payments.map(p=>'<div class="admin-user"><div><strong>'+escapeHtml(p.reference)+' — '+escapeHtml(p.customer_name)+'</strong><small>'+Number(p.amount_usd).toFixed(2)+' USD · '+escapeHtml(p.currency)+' · '+escapeHtml(p.payment_method)+' · '+escapeHtml(p.status)+'</small></div>'+(p.status==='pending'?'<div class="admin-actions"><button data-payment="'+p.id+'" data-decision="approved">Confirmer reçu</button><button class="danger" data-payment="'+p.id+'" data-decision="rejected">Refuser</button></div>':'')+'</div>').join('')||'<p>Aucun paiement enregistré.</p>'}
+ }catch(e){root.innerHTML='<p class="admin-message">'+escapeHtml(e.message)+'</p>'}
+}
+document.querySelectorAll('[data-section]').forEach(b=>b.addEventListener('click',()=>workspace(b.dataset.section)));
+$('admin-workspace').addEventListener('click',async e=>{const p=e.target.closest('[data-product]'),pay=e.target.closest('[data-payment]');try{if(p){await api('/api/admin/products/'+p.dataset.product+'/status',{method:'POST',body:JSON.stringify({status:p.dataset.status})});await workspace('products')}if(pay){if(!confirm(pay.dataset.decision==='approved'?'Confirmer que le paiement est réellement reçu ?':'Refuser ce paiement ?'))return;await api('/api/admin/payments/'+pay.dataset.payment+'/verify',{method:'POST',body:JSON.stringify({status:pay.dataset.decision})});await workspace('payments')}}catch(err){message(err.message,false,'requests-message')}});
+$('admin-workspace').addEventListener('change',async e=>{const s=e.target.closest('[data-production]');if(!s)return;try{await api('/api/admin/orders/'+s.dataset.production+'/production',{method:'POST',body:JSON.stringify({status:s.value})});await workspace('orders')}catch(err){message(err.message,false,'requests-message');await workspace('orders')}});
+
 $('logout').addEventListener('click',async()=>{try{await api('/api/admin/logout',{method:'POST',body:'{}'})}finally{csrfToken='';showLogin(false)}});
 $('requests-list').addEventListener('click',async e=>{const approve=e.target.closest('[data-approve]'),reject=e.target.closest('[data-reject]');const b=approve||reject;if(!b)return;const action=approve?'approve':'reject';if(!confirm(approve?'Approuver cette demande et activer le compte ?':'Refuser cette demande ?'))return;try{await api('/api/admin/signup-requests/'+encodeURIComponent(b.dataset[action])+'/'+action,{method:'POST',body:'{}'});message(approve?'Demande approuvée. Le compte est actif.':'Demande refusée.',true,'requests-message');await loadRequests();await loadUsers()}catch(err){message(err.message,false,'requests-message')}});
 $('users-list').addEventListener('click',async e=>{const b=e.target.closest('[data-disable]');if(!b||!confirm('Désactiver ce compte et révoquer ses sessions ?'))return;try{await api('/api/admin/users/'+b.dataset.disable+'/disable',{method:'POST',body:'{}'});await loadUsers()}catch(err){message(err.message,false,'requests-message')}});
