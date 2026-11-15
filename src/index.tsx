@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { registerAdminRoutes } from './admin';
 
-type Bindings = { DB: D1Database; ADMIN_BOOTSTRAP_KEY?: string };
+type Bindings = { DB: D1Database; PRODUCT_IMAGES: R2Bucket; ADMIN_BOOTSTRAP_KEY?: string };
 const app = new Hono<{ Bindings: Bindings }>();
 
 app.use('/api/*', cors());
@@ -181,6 +181,18 @@ app.get('/', (c) => c.html(`<!doctype html>
 
 app.get('/produit/:slug', (c) => app.fetch(new Request(new URL('/', c.req.url), c.req.raw), c.env, c.executionCtx));
 
+app.get('/media/products/*', async (c) => {
+  const key=decodeURIComponent(c.req.path.slice('/media/products/'.length));
+  if(!key || key.includes('..')) return c.notFound();
+  const object=await c.env.PRODUCT_IMAGES.get(key);
+  if(!object)return c.notFound();
+  const headers=new Headers();
+  object.writeHttpMetadata(headers);
+  headers.set('etag',object.httpEtag);
+  headers.set('cache-control','public, max-age=31536000, immutable');
+  return new Response(object.body,{headers});
+});
+
 app.get('/api/health', (c) => c.json({ status: 'ok', enterprise: 'UBUNTU HOLDING DRC', app: 'UBUNTU SHOP' }));
 
 app.get('/api/exchange-rate', async (c) => {
@@ -190,7 +202,7 @@ app.get('/api/exchange-rate', async (c) => {
 });
 
 app.get('/api/products', async (c) => {
-  const result = await c.env.DB.prepare("SELECT * FROM products WHERE status = 'published' ORDER BY created_at DESC").all();
+  const result = await c.env.DB.prepare("SELECT p.*, (SELECT '/media/products/' || pm.object_key FROM product_media pm WHERE pm.product_id=p.id ORDER BY pm.is_cover DESC,pm.sort_order ASC LIMIT 1) AS cover_image_url FROM products p WHERE p.status = 'published' ORDER BY p.created_at DESC").all();
   return c.json(result.results);
 });
 
