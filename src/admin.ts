@@ -276,8 +276,8 @@ export function registerAdminRoutes(app: Hono<AdminEnv>) {
     const session=await operationalSession(c);if(!session)return jsonError(c,'Session ou vérification de sécurité invalide.',403);
     const b=await c.req.json<any>().catch(()=>({} as {status?:string}));
     const fr=String(b.description_fr||'').trim(),en=String(b.description_en||fr).trim();
-    const min=Number(b.price_min_usd),max=Number(b.price_max_usd),deposit=Number(b.deposit_min_usd||0);
-    if(fr.length<5||!b.category_id||!Number.isFinite(min)||!Number.isFinite(max)||min<0||max<min||deposit<0||deposit>max)return jsonError(c,'Vérifiez la catégorie, la description et les prix.');
+    const min=Number(b.price_min_usd),max=Number(b.price_max_usd),depositPercent=Number(b.deposit_percent||0);
+    if(fr.length<5||!b.category_id||!Number.isFinite(min)||!Number.isFinite(max)||min<0||max<min||depositPercent<0||depositPercent>100)return jsonError(c,'Vérifiez la catégorie, la description et les prix.');
     const result=await c.env.DB.prepare('UPDATE products SET category_id=?,support_fr=?,support_en=?,description_fr=?,description_en=?,price_min_usd=?,price_max_usd=?,deposit_min_usd=0,deposit_percent=?,dimensions=?,personalization_options=?,availability=?,stock=?,updated_at=CURRENT_TIMESTAMP WHERE id=?')
     .bind(String(b.category_id),String(b.support_fr||''),String(b.support_en||b.support_fr||''),fr,en,min,max,depositPercent,String(b.dimensions||''),String(b.personalization_options||''),String(b.availability||'available'),Math.max(0,Math.floor(Number(b.stock)||0)),c.req.param('id')).run();
     if(!result.meta.changes)return jsonError(c,'Produit introuvable.',404);
