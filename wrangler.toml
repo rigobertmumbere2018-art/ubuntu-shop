@@ -14,3 +14,7 @@ database_id = "8e0c4d53-656f-4b1a-a0a7-01bcec6b1b2e"
 [vars]
 ENVIRONMENT = "production"
 DEFAULT_CURRENCY = "USD"
+
+[[r2_buckets]]
+binding = "PRODUCT_IMAGES"
+bucket_name = "ubuntu-shop-products"
