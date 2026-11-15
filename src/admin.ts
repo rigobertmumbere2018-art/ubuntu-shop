@@ -240,25 +240,31 @@ export function registerAdminRoutes(app: Hono<AdminEnv>) {
     return session;
   };
   app.get('/api/admin/overview', async c => {
-    const session=await authenticate(c); if(!session)return jsonError(c,'Connexion requise.',401);
-    // Each metric is isolated: an optional/temporarily unavailable table must not crash the entire dashboard.
-    const count = async (sql:string, key:string) => {
-      try {
-        const row = await c.env.DB.prepare(sql).first<Record<string,number>>();
-        return Number(row?.[key] || 0);
-      } catch (error) {
-        console.error('ADMIN_OVERVIEW_METRIC_FAILURE', key, error);
-        return 0;
-      }
-    };
-    const [products,orders,paymentsPending,proofsPending,customers] = await Promise.all([
-      count("SELECT COUNT(*) AS total FROM products","total"),
-      count("SELECT COUNT(*) AS total FROM orders","total"),
-      count("SELECT COUNT(*) AS total FROM orders WHERE payment_status IN ('unpaid','partial','pending')","total"),
-      count("SELECT COUNT(*) AS total FROM payment_proofs WHERE status='pending'","total"),
-      count("SELECT COUNT(*) AS total FROM customers","total")
-    ]);
-    return c.json({ok:true,stats:{products,orders,paymentsPending,proofsPending,customers}});
+    try {
+      const session=await authenticate(c);
+      if(!session) return jsonError(c,'Connexion requise.',401);
+      const count = async (sql:string, key:string) => {
+        try {
+          const row = await c.env.DB.prepare(sql).first<Record<string,number>>();
+          return Number(row?.[key] || 0);
+        } catch (error) {
+          console.error('ADMIN_OVERVIEW_METRIC_FAILURE', key, error);
+          return 0;
+        }
+      };
+      const [products,orders,paymentsPending,proofsPending,customers] = await Promise.all([
+        count("SELECT COUNT(*) AS total FROM products","total"),
+        count("SELECT COUNT(*) AS total FROM orders","total"),
+        count("SELECT COUNT(*) AS total FROM orders WHERE payment_status IN ('unpaid','partial','pending')","total"),
+        count("SELECT COUNT(*) AS total FROM payment_proofs WHERE status='pending'","total"),
+        count("SELECT COUNT(*) AS total FROM customers","total")
+      ]);
+      return c.json({ok:true,stats:{products,orders,paymentsPending,proofsPending,customers}});
+    } catch (error) {
+      console.error('ADMIN_OVERVIEW_FATAL', error);
+      const detail = error instanceof Error ? error.message : String(error);
+      return c.json({ok:false,error:'Erreur lors du chargement du tableau de bord.',diagnostic:detail},500);
+    }
   });
 
   app.get('/api/admin/categories', async c => {
