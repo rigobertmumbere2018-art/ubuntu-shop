@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 
-type AdminEnv = { Bindings: { DB: D1Database; ADMIN_BOOTSTRAP_KEY?: string } };
+type AdminEnv = { Bindings: { DB: D1Database; PRODUCT_IMAGES: R2Bucket; ADMIN_BOOTSTRAP_KEY?: string } };
 type AdminRole = 'super_admin' | 'admin';
 
 const SESSION_HOURS = 8;
@@ -299,6 +299,56 @@ export function registerAdminRoutes(app: Hono<AdminEnv>) {
     if(!result.meta.changes)return jsonError(c,'Produit introuvable.',404);
     return c.json({ok:true,message:'Produit mis à jour.'});
   });
+  app.get('/api/admin/products/:id/images', async c => {
+    const session=await authenticate(c);if(!session)return jsonError(c,'Connexion requise.',401);
+    const product=await c.env.DB.prepare('SELECT id FROM products WHERE id=?').bind(c.req.param('id')).first();
+    if(!product)return jsonError(c,'Produit introuvable.',404);
+    const result=await c.env.DB.prepare('SELECT id,object_key,alt_fr,alt_en,sort_order,is_cover,created_at FROM product_media WHERE product_id=? ORDER BY is_cover DESC,sort_order ASC,created_at ASC').bind(c.req.param('id')).all();
+    return c.json({ok:true,images:result.results.map((image:any)=>({...image,url:'/media/products/'+encodeURIComponent(image.object_key)}))});
+  });
+  app.post('/api/admin/products/:id/images', async c => {
+    const session=await operationalSession(c);if(!session)return jsonError(c,'Session ou vérification de sécurité invalide.',403);
+    const productId=c.req.param('id');
+    const product=await c.env.DB.prepare('SELECT id FROM products WHERE id=?').bind(productId).first();
+    if(!product)return jsonError(c,'Produit introuvable.',404);
+    const form=await c.req.formData();
+    const files=form.getAll('images').filter((value):value is File=>value instanceof File && value.size>0);
+    if(!files.length)return jsonError(c,'Sélectionnez au moins une image.');
+    if(files.length>8)return jsonError(c,'Maximum 8 images par envoi.');
+    const existing=await c.env.DB.prepare('SELECT COUNT(*) AS total FROM product_media WHERE product_id=?').bind(productId).first<{total:number}>();
+    if(Number(existing?.total||0)+files.length>12)return jsonError(c,'Maximum 12 images par produit.');
+    const allowed=new Set(['image/jpeg','image/png','image/webp','image/avif']);
+    const added=[];
+    for(const file of files){
+      if(!allowed.has(file.type))return jsonError(c,'Formats acceptés : JPG, PNG, WEBP ou AVIF.');
+      if(file.size>8*1024*1024)return jsonError(c,'Chaque image doit peser 8 Mo maximum.');
+      const ext=({'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/avif':'avif'} as Record<string,string>)[file.type];
+      const key=productId+'/'+crypto.randomUUID()+'.'+ext;
+      await c.env.PRODUCT_IMAGES.put(key,file.stream(),{httpMetadata:{contentType:file.type,cacheControl:'public, max-age=31536000, immutable'}});
+      const mediaId=crypto.randomUUID(),sort=Number(existing?.total||0)+added.length;
+      await c.env.DB.prepare('INSERT INTO product_media (id,product_id,object_key,alt_fr,alt_en,sort_order,is_cover) VALUES (?,?,?,?,?,?,?)')
+        .bind(mediaId,productId,key,String(form.get('alt_fr')||'Image du produit'),String(form.get('alt_en')||'Product image'),sort,sort===0?1:0).run();
+      added.push({id:mediaId,url:'/media/products/'+encodeURIComponent(key),is_cover:sort===0});
+    }
+    return c.json({ok:true,images:added,message:added.length+' image(s) ajoutée(s).'},201);
+  });
+  app.delete('/api/admin/products/:id/images/:imageId', async c => {
+    const session=await operationalSession(c);if(!session)return jsonError(c,'Session ou vérification de sécurité invalide.',403);
+    const media=await c.env.DB.prepare('SELECT id,object_key,is_cover FROM product_media WHERE id=? AND product_id=?').bind(c.req.param('imageId'),c.req.param('id')).first<any>();
+    if(!media)return jsonError(c,'Image introuvable.',404);
+    await c.env.PRODUCT_IMAGES.delete(media.object_key);
+    await c.env.DB.prepare('DELETE FROM product_media WHERE id=?').bind(media.id).run();
+    if(media.is_cover){const next=await c.env.DB.prepare('SELECT id FROM product_media WHERE product_id=? ORDER BY sort_order ASC,created_at ASC LIMIT 1').bind(c.req.param('id')).first<any>();if(next)await c.env.DB.prepare('UPDATE product_media SET is_cover=1 WHERE id=?').bind(next.id).run();}
+    return c.json({ok:true,message:'Image supprimée.'});
+  });
+  app.post('/api/admin/products/:id/images/:imageId/cover', async c => {
+    const session=await operationalSession(c);if(!session)return jsonError(c,'Session ou vérification de sécurité invalide.',403);
+    const media=await c.env.DB.prepare('SELECT id FROM product_media WHERE id=? AND product_id=?').bind(c.req.param('imageId'),c.req.param('id')).first();
+    if(!media)return jsonError(c,'Image introuvable.',404);
+    await c.env.DB.batch([c.env.DB.prepare('UPDATE product_media SET is_cover=0 WHERE product_id=?').bind(c.req.param('id')),c.env.DB.prepare('UPDATE product_media SET is_cover=1 WHERE id=?').bind(c.req.param('imageId'))]);
+    return c.json({ok:true,message:'Image principale mise à jour.'});
+  });
+
   app.get('/api/admin/products', async c => {
     const session=await authenticate(c);if(!session)return jsonError(c,'Connexion requise.',401);
     const r=await c.env.DB.prepare("SELECT p.id,p.reference,p.description_fr,p.description_en,p.support_fr,p.support_en,p.price_min_usd,p.price_max_usd,p.deposit_percent,p.dimensions,p.personalization_options,p.availability,p.stock,p.status,p.category_id,c.name_fr category FROM products p LEFT JOIN categories c ON c.id=p.category_id ORDER BY p.created_at DESC").all();
