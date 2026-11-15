@@ -241,14 +241,24 @@ export function registerAdminRoutes(app: Hono<AdminEnv>) {
   };
   app.get('/api/admin/overview', async c => {
     const session=await authenticate(c); if(!session)return jsonError(c,'Connexion requise.',401);
-    const queries = await Promise.all([
-      c.env.DB.prepare("SELECT COUNT(*) total FROM products").first(),
-      c.env.DB.prepare("SELECT COUNT(*) total FROM orders").first(),
-      c.env.DB.prepare("SELECT COUNT(*) total FROM orders WHERE payment_status IN ('unpaid','partial','pending')").first(),
-      c.env.DB.prepare("SELECT COUNT(*) total FROM payment_proofs WHERE status='pending'").first(),
-      c.env.DB.prepare("SELECT COUNT(*) total FROM customers").first()
+    // Each metric is isolated: an optional/temporarily unavailable table must not crash the entire dashboard.
+    const count = async (sql:string, key:string) => {
+      try {
+        const row = await c.env.DB.prepare(sql).first<Record<string,number>>();
+        return Number(row?.[key] || 0);
+      } catch (error) {
+        console.error('ADMIN_OVERVIEW_METRIC_FAILURE', key, error);
+        return 0;
+      }
+    };
+    const [products,orders,paymentsPending,proofsPending,customers] = await Promise.all([
+      count("SELECT COUNT(*) AS total FROM products","total"),
+      count("SELECT COUNT(*) AS total FROM orders","total"),
+      count("SELECT COUNT(*) AS total FROM orders WHERE payment_status IN ('unpaid','partial','pending')","total"),
+      count("SELECT COUNT(*) AS total FROM payment_proofs WHERE status='pending'","total"),
+      count("SELECT COUNT(*) AS total FROM customers","total")
     ]);
-    return c.json({ok:true,stats:{products:(queries[0] as any)?.total||0,orders:(queries[1] as any)?.total||0,paymentsPending:(queries[2] as any)?.total||0,proofsPending:(queries[3] as any)?.total||0,customers:(queries[4] as any)?.total||0}});
+    return c.json({ok:true,stats:{products,orders,paymentsPending,proofsPending,customers}});
   });
 
   app.get('/api/admin/categories', async c => {
