@@ -258,7 +258,7 @@ export function registerAdminRoutes(app: Hono<AdminEnv>) {
   });
   app.post('/api/admin/products', async c => {
     const session=await operationalSession(c);if(!session)return jsonError(c,'Session ou vérification de sécurité invalide.',403);
-    const b=await c.req.json<any>().catch(()=>({}));
+    const b=await c.req.json<any>().catch(()=>({} as {status?:string}));
     const reference=String(b.reference||'').trim().toUpperCase();
     const categoryId=String(b.category_id||'');
     const fr=String(b.description_fr||'').trim(),en=String(b.description_en||fr).trim();
@@ -274,7 +274,7 @@ export function registerAdminRoutes(app: Hono<AdminEnv>) {
   });
   app.put('/api/admin/products/:id', async c => {
     const session=await operationalSession(c);if(!session)return jsonError(c,'Session ou vérification de sécurité invalide.',403);
-    const b=await c.req.json<any>().catch(()=>({}));
+    const b=await c.req.json<any>().catch(()=>({} as {status?:string}));
     const fr=String(b.description_fr||'').trim(),en=String(b.description_en||fr).trim();
     const min=Number(b.price_min_usd),max=Number(b.price_max_usd),deposit=Number(b.deposit_min_usd||0);
     if(fr.length<5||!b.category_id||!Number.isFinite(min)||!Number.isFinite(max)||min<0||max<min||deposit<0||deposit>max)return jsonError(c,'Vérifiez la catégorie, la description et les prix.');
@@ -300,7 +300,7 @@ export function registerAdminRoutes(app: Hono<AdminEnv>) {
   });
   app.post('/api/admin/orders/:id/production', async c => {
     const session=await operationalSession(c);if(!session)return jsonError(c,'Session ou vérification de sécurité invalide.',403);
-    const body=await c.req.json<{status?:string}>().catch(()=>({}));
+    const body=await c.req.json<{status?:string}>().catch(()=>({} as {status?:string}));
     if(!['pending','in_production','ready','delivered','cancelled'].includes(String(body.status)))return jsonError(c,'Statut de production invalide.');
     const order=await c.env.DB.prepare('SELECT payment_status,deposit_required_usd,deposit_paid_usd FROM orders WHERE id=?').bind(c.req.param('id')).first<any>();
     if(!order)return jsonError(c,'Commande introuvable.',404);
@@ -311,7 +311,7 @@ export function registerAdminRoutes(app: Hono<AdminEnv>) {
   });
   app.post('/api/admin/payments/:id/verify', async c => {
     const session=await operationalSession(c);if(!session)return jsonError(c,'Session ou vérification de sécurité invalide.',403);
-    const body=await c.req.json<{status?:string}>().catch(()=>({}));
+    const body=await c.req.json<{status?:string}>().catch(()=>({} as {status?:string}));
     if(!['approved','rejected'].includes(String(body.status)))return jsonError(c,'Décision invalide.');
     const payment=await c.env.DB.prepare('SELECT id,order_id,amount_usd,status FROM payments WHERE id=?').bind(c.req.param('id')).first<any>();
     if(!payment)return jsonError(c,'Paiement introuvable.',404);
@@ -325,7 +325,7 @@ export function registerAdminRoutes(app: Hono<AdminEnv>) {
   });
   app.post('/api/admin/products/:id/status', async c => {
     const session=await operationalSession(c);if(!session)return jsonError(c,'Session ou vérification de sécurité invalide.',403);
-    const body=await c.req.json<{status?:string}>().catch(()=>({}));
+    const body=await c.req.json<{status?:string}>().catch(()=>({} as {status?:string}));
     if(!['draft','published','archived'].includes(String(body.status)))return jsonError(c,'Statut invalide.');
     const result=await c.env.DB.prepare('UPDATE products SET status=?,updated_at=CURRENT_TIMESTAMP WHERE id=?').bind(body.status,c.req.param('id')).run();
     if(!result.meta.changes)return jsonError(c,'Produit introuvable.',404);
